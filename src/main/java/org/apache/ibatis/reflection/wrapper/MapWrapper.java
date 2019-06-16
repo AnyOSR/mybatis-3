@@ -36,9 +36,10 @@ public class MapWrapper extends BaseWrapper {
     this.map = map;
   }
 
+  // name[index].children
   @Override
   public Object get(PropertyTokenizer prop) {
-    if (prop.getIndex() != null) {
+    if (prop.getIndex() != null) {   // index 存在
       Object collection = resolveCollection(prop, map);
       return getCollectionValue(prop, collection);
     } else {
@@ -46,8 +47,10 @@ public class MapWrapper extends BaseWrapper {
     }
   }
 
+  // 填充map或者是填充metaObject里面某一属性的值
   @Override
   public void set(PropertyTokenizer prop, Object value) {
+    //
     if (prop.getIndex() != null) {
       Object collection = resolveCollection(prop, map);
       setCollectionValue(prop, collection, value);
@@ -74,12 +77,13 @@ public class MapWrapper extends BaseWrapper {
   @Override
   public Class<?> getSetterType(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果有.
     if (prop.hasNext()) {
-      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
+      MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());  // 则取index对应的MetaObject
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         return Object.class;
       } else {
-        return metaValue.getSetterType(prop.getChildren());
+        return metaValue.getSetterType(prop.getChildren());  // 然后获取children的类型
       }
     } else {
       if (map.get(name) != null) {
@@ -93,6 +97,7 @@ public class MapWrapper extends BaseWrapper {
   @Override
   public Class<?> getGetterType(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果有.
     if (prop.hasNext()) {
       MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
@@ -117,6 +122,7 @@ public class MapWrapper extends BaseWrapper {
   @Override
   public boolean hasGetter(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果有.
     if (prop.hasNext()) {
       if (map.containsKey(prop.getIndexedName())) {
         MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
@@ -133,6 +139,7 @@ public class MapWrapper extends BaseWrapper {
     }
   }
 
+  //创建objectWrapper为MapWrapper的MetaObject
   @Override
   public MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory) {
     HashMap<String, Object> map = new HashMap<String, Object>();

@@ -34,19 +34,21 @@ public abstract class BaseWrapper implements ObjectWrapper {
     this.metaObject = metaObject;
   }
 
+  // name不存在，则取默认值map
+  // 否则从metaObject里面取
   protected Object resolveCollection(PropertyTokenizer prop, Object object) {
-    if ("".equals(prop.getName())) {
+    if ("".equals(prop.getName())) {        // 如果name为空，则返回object(相当于一个默认值)
       return object;
-    } else {
+    } else {                                // 否则，从metaObject里面取name的值
       return metaObject.getValue(prop.getName());
     }
   }
 
   protected Object getCollectionValue(PropertyTokenizer prop, Object collection) {
-    if (collection instanceof Map) {
+    if (collection instanceof Map) {                    // 如果是Map类型   index则为key
       return ((Map) collection).get(prop.getIndex());
     } else {
-      int i = Integer.parseInt(prop.getIndex());
+      int i = Integer.parseInt(prop.getIndex());   //否则，index为下表
       if (collection instanceof List) {
         return ((List) collection).get(i);
       } else if (collection instanceof Object[]) {
