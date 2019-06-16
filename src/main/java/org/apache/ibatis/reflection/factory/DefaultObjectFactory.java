@@ -58,18 +58,18 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
   private  <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
-      if (constructorArgTypes == null || constructorArgs == null) {
+      if (constructorArgTypes == null || constructorArgs == null) {   //如果没有传入构造函数信息
         constructor = type.getDeclaredConstructor();
         if (!constructor.isAccessible()) {
           constructor.setAccessible(true);
         }
         return constructor.newInstance();
       }
-      constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[constructorArgTypes.size()]));
+      constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[constructorArgTypes.size()])); // 获取参数类型对应的构造函数
       if (!constructor.isAccessible()) {
         constructor.setAccessible(true);
       }
-      return constructor.newInstance(constructorArgs.toArray(new Object[constructorArgs.size()]));
+      return constructor.newInstance(constructorArgs.toArray(new Object[constructorArgs.size()]));   //利用传入的入参构造实例
     } catch (Exception e) {
       StringBuilder argTypes = new StringBuilder();
       if (constructorArgTypes != null && !constructorArgTypes.isEmpty()) {

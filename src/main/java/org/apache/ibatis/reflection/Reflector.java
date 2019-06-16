@@ -92,7 +92,7 @@ public class Reflector {
   }
 
   private void addGetMethods(Class<?> cls) {
-    Map<String, List<Method>> conflictingGetters = new HashMap<String, List<Method>>();
+    Map<String, List<Method>> conflictingGetters = new HashMap<String, List<Method>>();   // property --- 所有的get这个property的方法
     Method[] methods = getClassMethods(cls);
     for (Method method : methods) {
       if (method.getParameterTypes().length > 0) {
@@ -108,6 +108,7 @@ public class Reflector {
     resolveGetterConflicts(conflictingGetters);
   }
 
+  // property --- 所有的get这个property的方法
   private void resolveGetterConflicts(Map<String, List<Method>> conflictingGetters) {
     for (Entry<String, List<Method>> entry : conflictingGetters.entrySet()) {
       Method winner = null;
@@ -119,7 +120,7 @@ public class Reflector {
         }
         Class<?> winnerType = winner.getReturnType();
         Class<?> candidateType = candidate.getReturnType();
-        if (candidateType.equals(winnerType)) {
+        if (candidateType.equals(winnerType)) {   // 返回类型一样,则如果返回类型不是boolean，则异常 isA getA 可以返回Boolean
           if (!boolean.class.equals(candidateType)) {
             throw new ReflectionException(
                 "Illegal overloaded getter method with ambiguous type for property "
@@ -128,7 +129,7 @@ public class Reflector {
           } else if (candidate.getName().startsWith("is")) {
             winner = candidate;
           }
-        } else if (candidateType.isAssignableFrom(winnerType)) {
+        } else if (candidateType.isAssignableFrom(winnerType)) {   //子类胜出
           // OK getter type is descendant
         } else if (winnerType.isAssignableFrom(candidateType)) {
           winner = candidate;
@@ -212,7 +213,7 @@ public class Reflector {
     }
     Class<?> paramType1 = setter1.getParameterTypes()[0];
     Class<?> paramType2 = setter2.getParameterTypes()[0];
-    if (paramType1.isAssignableFrom(paramType2)) {
+    if (paramType1.isAssignableFrom(paramType2)) {  // 子类胜出
       return setter2;
     } else if (paramType2.isAssignableFrom(paramType1)) {
       return setter1;
@@ -232,12 +233,12 @@ public class Reflector {
 
   private Class<?> typeToClass(Type src) {
     Class<?> result = null;
-    if (src instanceof Class) {
+    if (src instanceof Class) {          // class类
       result = (Class<?>) src;
-    } else if (src instanceof ParameterizedType) {
+    } else if (src instanceof ParameterizedType) {       // 泛型
       result = (Class<?>) ((ParameterizedType) src).getRawType();
-    } else if (src instanceof GenericArrayType) {
-      Type componentType = ((GenericArrayType) src).getGenericComponentType();
+    } else if (src instanceof GenericArrayType) {                                // 泛型数组
+      Type componentType = ((GenericArrayType) src).getGenericComponentType();   // 去掉最外面一个括号
       if (componentType instanceof Class) {
         result = Array.newInstance((Class<?>) componentType, 0).getClass();
       } else {

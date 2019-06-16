@@ -41,7 +41,7 @@ public class DefaultReflectorFactory implements ReflectorFactory {
             // synchronized (type) removed see issue #461
       Reflector cached = reflectorMap.get(type);
       if (cached == null) {
-        cached = new Reflector(type);
+        cached = new Reflector(type);          //创建Reflector的时候会初始化数据
         reflectorMap.put(type, cached);
       }
       return cached;

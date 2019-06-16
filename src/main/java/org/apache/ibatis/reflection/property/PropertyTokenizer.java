@@ -34,10 +34,10 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
     } else {
       name = fullname;
       children = null;
-    }
+    }                                     // name.children
     indexedName = name;
     delim = name.indexOf('[');
-    if (delim > -1) {
+    if (delim > -1) {                     // name[index].children
       index = name.substring(delim + 1, name.length() - 1);
       name = name.substring(0, delim);
     }

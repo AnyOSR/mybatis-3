@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
  */
 public class MethodInvoker implements Invoker {
 
-  private final Class<?> type;
+  private final Class<?> type;     //要么是入参类型，要么是返回类型  对于get或者set方法来说很合适
   private final Method method;
 
   public MethodInvoker(Method method) {
