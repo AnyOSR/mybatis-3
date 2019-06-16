@@ -51,8 +51,8 @@ public class Reflector {
   private final String[] writeablePropertyNames;
   private final Map<String, Invoker> setMethods = new HashMap<String, Invoker>();
   private final Map<String, Invoker> getMethods = new HashMap<String, Invoker>();
-  private final Map<String, Class<?>> setTypes = new HashMap<String, Class<?>>();
-  private final Map<String, Class<?>> getTypes = new HashMap<String, Class<?>>();
+  private final Map<String, Class<?>> setTypes = new HashMap<String, Class<?>>();    // property type
+  private final Map<String, Class<?>> getTypes = new HashMap<String, Class<?>>();    // property Type
   private Constructor<?> defaultConstructor;
 
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<String, String>();
@@ -252,6 +252,9 @@ public class Reflector {
     return result;
   }
 
+    // 如果不存在prop对应的set方法，则直接通过SetFieldInvoker来设置
+    // 如果不存在prop对应的get方法，则直接通过GetFieldInvoker来获取
+    // 一般如果存在set和get方法的法，其类型应该是MethodInvoker
   private void addFields(Class<?> clazz) {
     Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
@@ -354,6 +357,8 @@ public class Reflector {
     }
   }
 
+  //获取方法的签名
+    // 方法的返回类型#方法名称:参数名称,参数名称
   private String getSignature(Method method) {
     StringBuilder sb = new StringBuilder();
     Class<?> returnType = method.getReturnType();

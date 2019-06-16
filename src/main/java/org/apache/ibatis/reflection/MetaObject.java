@@ -143,7 +143,7 @@ public class MetaObject {
   }
 
   public MetaObject metaObjectForProperty(String name) {
-    Object value = getValue(name);
+    Object value = getValue(name);     // 获取name对应的value，然后返回value对应的MetaObject
     return MetaObject.forObject(value, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
