@@ -34,6 +34,7 @@ public class MetaObject {
 
   private final Object originalObject;
   private final ObjectWrapper objectWrapper;
+
   private final ObjectFactory objectFactory;
   private final ObjectWrapperFactory objectWrapperFactory;
   private final ReflectorFactory reflectorFactory;
@@ -112,6 +113,7 @@ public class MetaObject {
 
   public Object getValue(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果有.
     if (prop.hasNext()) {
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
@@ -119,7 +121,7 @@ public class MetaObject {
       } else {
         return metaValue.getValue(prop.getChildren());
       }
-    } else {
+    } else {   // 否则，直接从当前objectWrapper里取
       return objectWrapper.get(prop);
     }
   }
