@@ -42,6 +42,7 @@ public abstract class AbstractSerialStateHolder implements Externalizable {
   private static final long serialVersionUID = 8940388717901644661L;
   private static final ThreadLocal<ObjectOutputStream> stream = new ThreadLocal<ObjectOutputStream>();
   private byte[] userBeanBytes = new byte[0];
+
   private Object userBean;
   private Map<String, ResultLoaderMap.LoadPair> unloadedProperties;
   private ObjectFactory objectFactory;
@@ -127,6 +128,5 @@ public abstract class AbstractSerialStateHolder implements Externalizable {
     return this.createDeserializationProxy(userBean, arrayProps, objectFactory, arrayTypes, arrayValues);
   }
 
-  protected abstract Object createDeserializationProxy(Object target, Map<String, ResultLoaderMap.LoadPair> unloadedProperties, ObjectFactory objectFactory,
-          List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
+  protected abstract Object createDeserializationProxy(Object target, Map<String, ResultLoaderMap.LoadPair> unloadedProperties, ObjectFactory objectFactory, List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
 }
