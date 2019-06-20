@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 /**
- * A class to wrap access to multiple class loaders making them work as one
+ * A class to wrap access to multiple class loaders making them work as one   各种类加载器的代理
  *
  * @author Clinton Begin
  */
@@ -201,6 +201,8 @@ public class ClassLoaderWrapper {
 
   }
 
+  // 返回一系列类加载器
+  // 传入加载器 defaultClassLoader 当先线程的上下文加载器 加载当前类的加载器 systemClassLoader
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
         classLoader,

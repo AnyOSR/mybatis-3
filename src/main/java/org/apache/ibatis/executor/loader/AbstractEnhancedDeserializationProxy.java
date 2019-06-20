@@ -55,6 +55,7 @@ public abstract class AbstractEnhancedDeserializationProxy {
   public final Object invoke(Object enhanced, Method method, Object[] args) throws Throwable {
     final String methodName = method.getName();
     try {
+      // 如果是writeReplace方法  生成对象 返回SerialStateHolder
       if (WRITE_REPLACE_METHOD.equals(methodName)) {
         final Object original;
         if (constructorArgTypes.isEmpty()) {
@@ -67,6 +68,7 @@ public abstract class AbstractEnhancedDeserializationProxy {
         return this.newSerialStateHolder(original, unloadedProperties, objectFactory, constructorArgTypes, constructorArgs);
       } else {
         synchronized (this.reloadingPropertyLock) {
+          // 如果不是finalize方法 且是一个属性 且!reloadingProperty
           if (!FINALIZE_METHOD.equals(methodName) && PropertyNamer.isProperty(methodName) && !reloadingProperty) {
             final String property = PropertyNamer.methodToProperty(methodName);
             final String propertyKey = property.toUpperCase(Locale.ENGLISH);
@@ -82,8 +84,7 @@ public abstract class AbstractEnhancedDeserializationProxy {
               } else {
                 /* I'm not sure if this case can really happen or is just in tests -
                  * we have an unread property but no loadPair to load it. */
-                throw new ExecutorException("An attempt has been made to read a not loaded lazy property '"
-                        + property + "' of a disconnected object");
+                throw new ExecutorException("An attempt has been made to read a not loaded lazy property '" + property + "' of a disconnected object");
               }
             }
           }
@@ -96,11 +97,6 @@ public abstract class AbstractEnhancedDeserializationProxy {
     }
   }
 
-  protected abstract AbstractSerialStateHolder newSerialStateHolder(
-          Object userBean,
-          Map<String, ResultLoaderMap.LoadPair> unloadedProperties,
-          ObjectFactory objectFactory,
-          List<Class<?>> constructorArgTypes,
-          List<Object> constructorArgs);
+  protected abstract AbstractSerialStateHolder newSerialStateHolder(Object userBean, Map<String, ResultLoaderMap.LoadPair> unloadedProperties, ObjectFactory objectFactory, List<Class<?>> constructorArgTypes, List<Object> constructorArgs);
 
 }
