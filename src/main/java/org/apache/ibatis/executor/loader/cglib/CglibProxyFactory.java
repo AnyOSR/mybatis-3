@@ -130,6 +130,7 @@ public class CglibProxyFactory implements ProxyFactory {
       final String methodName = method.getName();
       try {
         synchronized (lazyLoader) {
+          // writeReplace
           if (WRITE_REPLACE_METHOD.equals(methodName)) {
             Object original;
             if (constructorArgTypes.isEmpty()) {
@@ -144,6 +145,7 @@ public class CglibProxyFactory implements ProxyFactory {
               return original;
             }
           } else {
+            // lazyLoader 且不是finalize
             if (lazyLoader.size() > 0 && !FINALIZE_METHOD.equals(methodName)) {
               if (aggressive || lazyLoadTriggerMethods.contains(methodName)) {
                 lazyLoader.loadAll();
