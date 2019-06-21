@@ -75,6 +75,7 @@ public class ResultLoaderMap {
     return loaderMap.containsKey(property.toUpperCase(Locale.ENGLISH));
   }
 
+  // 先remove？然后加载？
   public boolean load(String property) throws SQLException {
     LoadPair pair = loaderMap.remove(property.toUpperCase(Locale.ENGLISH));
     if (pair != null) {
@@ -96,6 +97,7 @@ public class ResultLoaderMap {
     }
   }
 
+  // 点split
   private static String getUppercaseFirstProperty(String property) {
     String[] parts = property.split("\\.");
     return parts[0].toUpperCase(Locale.ENGLISH);
