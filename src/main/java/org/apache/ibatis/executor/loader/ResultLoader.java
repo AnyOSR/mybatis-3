@@ -48,11 +48,12 @@ public class ResultLoader {
   protected final CacheKey cacheKey;
   protected final BoundSql boundSql;
   protected final ResultExtractor resultExtractor;
-  protected final long creatorThreadId;
+  protected final long creatorThreadId;   // 创建这个对象的线程Id
   
   protected boolean loaded;
   protected Object resultObject;
-  
+
+  // 一个mappedStatement只会有一个ResultLoader？
   public ResultLoader(Configuration config, Executor executor, MappedStatement mappedStatement, Object parameterObject, Class<?> targetType, CacheKey cacheKey, BoundSql boundSql) {
     this.configuration = config;
     this.executor = executor;
@@ -74,30 +75,33 @@ public class ResultLoader {
 
   private <E> List<E> selectList() throws SQLException {
     Executor localExecutor = executor;
+    // 如果当前线程不是创建这个对象的线程 或者执行器已经关闭
+    // 则新建一个执行器
     if (Thread.currentThread().getId() != this.creatorThreadId || localExecutor.isClosed()) {
       localExecutor = newExecutor();
     }
     try {
       return localExecutor.<E> query(mappedStatement, parameterObject, RowBounds.DEFAULT, Executor.NO_RESULT_HANDLER, cacheKey, boundSql);
     } finally {
-      if (localExecutor != executor) {
+      if (localExecutor != executor) {  // 如果线程变更过，则关闭新生成的localExecutor
         localExecutor.close(false);
       }
     }
   }
 
+  // 创建一个Executor
   private Executor newExecutor() {
     final Environment environment = configuration.getEnvironment();
     if (environment == null) {
       throw new ExecutorException("ResultLoader could not load lazily.  Environment was not configured.");
     }
-    final DataSource ds = environment.getDataSource();
+    final DataSource ds = environment.getDataSource();                                       // 从environment中获取数据源
     if (ds == null) {
       throw new ExecutorException("ResultLoader could not load lazily.  DataSource was not configured.");
     }
-    final TransactionFactory transactionFactory = environment.getTransactionFactory();
-    final Transaction tx = transactionFactory.newTransaction(ds, null, false);
-    return configuration.newExecutor(tx, ExecutorType.SIMPLE);
+    final TransactionFactory transactionFactory = environment.getTransactionFactory();          // 从environment中获取事务工厂
+    final Transaction tx = transactionFactory.newTransaction(ds, null, false); // 创建事务
+    return configuration.newExecutor(tx, ExecutorType.SIMPLE);                                  // 创建一个Executor，包含一个事务
   }
 
   public boolean wasNull() {

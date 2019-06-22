@@ -35,6 +35,8 @@ public class ParamNameUtil {
     return getParameterNames(constructor);
   }
 
+  // Executable： Method Constructor
+  // 获取方法的参数
   private static List<String> getParameterNames(Executable executable) {
     final List<String> names = new ArrayList<String>();
     final Parameter[] params = executable.getParameters();

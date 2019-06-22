@@ -31,17 +31,17 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 public class ResultMapping {
 
   private Configuration configuration;
-  private String property;
-  private String column;
-  private Class<?> javaType;
-  private JdbcType jdbcType;
+  private String property;   // java中的property
+  private String column;     // 表中的column  逗号分隔
+  private Class<?> javaType; // java中对应的类型
+  private JdbcType jdbcType; // 对应数据库中字段的类型
   private TypeHandler<?> typeHandler;
   private String nestedResultMapId;
   private String nestedQueryId;
   private Set<String> notNullColumns;
   private String columnPrefix;
   private List<ResultFlag> flags;
-  private List<ResultMapping> composites;
+  private List<ResultMapping> composites;   // 递归
   private String resultSet;
   private String foreignColumn;
   private boolean lazy;
@@ -168,7 +168,8 @@ public class ResultMapping {
         }
       }
     }
-    
+
+    // 每一种JavaType、jdbcType都对应一种typeHandler？
     private void resolveTypeHandler() {
       if (resultMapping.typeHandler == null && resultMapping.javaType != null) {
         Configuration configuration = resultMapping.configuration;

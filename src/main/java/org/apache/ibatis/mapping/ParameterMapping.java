@@ -99,14 +99,18 @@ public class ParameterMapping {
       return this;
     }
 
+    // 创建一个ParameterMapping
     public ParameterMapping build() {
       resolveTypeHandler();
       validate();
       return parameterMapping;
     }
 
+    //校验
+    // typeHandler
+    // javaType resultMapId ？
     private void validate() {
-      if (ResultSet.class.equals(parameterMapping.javaType)) {
+      if (ResultSet.class.equals(parameterMapping.javaType)) {  // 如果JavaType不是ResultSet
         if (parameterMapping.resultMapId == null) { 
           throw new IllegalStateException("Missing resultmap in property '"  
               + parameterMapping.property + "'.  " 
@@ -121,6 +125,7 @@ public class ParameterMapping {
       }
     }
 
+    // 根据javaType和jdbcType构建typeHandler
     private void resolveTypeHandler() {
       if (parameterMapping.typeHandler == null && parameterMapping.javaType != null) {
         Configuration configuration = parameterMapping.configuration;

@@ -41,10 +41,12 @@ public class ResultMap {
 
   private String id;
   private Class<?> type;
+
   private List<ResultMapping> resultMappings;
   private List<ResultMapping> idResultMappings;
   private List<ResultMapping> constructorResultMappings;
   private List<ResultMapping> propertyResultMappings;
+
   private Set<String> mappedColumns;
   private Set<String> mappedProperties;
   private Discriminator discriminator;
@@ -64,6 +66,7 @@ public class ResultMap {
       this(configuration, id, type, resultMappings, null);
     }
 
+    // resultMappings
     public Builder(Configuration configuration, String id, Class<?> type, List<ResultMapping> resultMappings, Boolean autoMapping) {
       resultMap.configuration = configuration;
       resultMap.id = id;
@@ -91,13 +94,16 @@ public class ResultMap {
       resultMap.constructorResultMappings = new ArrayList<ResultMapping>();
       resultMap.propertyResultMappings = new ArrayList<ResultMapping>();
       final List<String> constructorArgNames = new ArrayList<String>();
+
       for (ResultMapping resultMapping : resultMap.resultMappings) {
         resultMap.hasNestedQueries = resultMap.hasNestedQueries || resultMapping.getNestedQueryId() != null;
         resultMap.hasNestedResultMaps = resultMap.hasNestedResultMaps || (resultMapping.getNestedResultMapId() != null && resultMapping.getResultSet() == null);
+
+        //构建mappedColumns
         final String column = resultMapping.getColumn();
         if (column != null) {
           resultMap.mappedColumns.add(column.toUpperCase(Locale.ENGLISH));
-        } else if (resultMapping.isCompositeResult()) {
+        } else if (resultMapping.isCompositeResult()) { //是否是复合类型 只会深入一层？
           for (ResultMapping compositeResultMapping : resultMapping.getComposites()) {
             final String compositeColumn = compositeResultMapping.getColumn();
             if (compositeColumn != null) {
@@ -105,22 +111,30 @@ public class ResultMap {
             }
           }
         }
+
+        //构建mappedProperties
         final String property = resultMapping.getProperty();
         if(property != null) {
           resultMap.mappedProperties.add(property);
         }
+
+        //构建constructorResultMappings 或者 propertyResultMappings 二选一
+        // 优先constructorResultMappings
         if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {
           resultMap.constructorResultMappings.add(resultMapping);
           if (resultMapping.getProperty() != null) {
-            constructorArgNames.add(resultMapping.getProperty());
+            constructorArgNames.add(resultMapping.getProperty());    // 有ResultFlag.CONSTRUCTOR 有Property
           }
         } else {
           resultMap.propertyResultMappings.add(resultMapping);
         }
+
+        // 构建idResultMappings
         if (resultMapping.getFlags().contains(ResultFlag.ID)) {
           resultMap.idResultMappings.add(resultMapping);
         }
       }
+
       if (resultMap.idResultMappings.isEmpty()) {
         resultMap.idResultMappings.addAll(resultMap.resultMappings);
       }
@@ -132,6 +146,8 @@ public class ResultMap {
               + resultMap.getType().getName() + "' by arg names " + constructorArgNames
               + ". There might be more info in debug log.");
         }
+
+        // constructorResultMappings中的一部分元素可能没有property
         Collections.sort(resultMap.constructorResultMappings, new Comparator<ResultMapping>() {
           @Override
           public int compare(ResultMapping o1, ResultMapping o2) {
@@ -156,8 +172,7 @@ public class ResultMap {
         Class<?>[] paramTypes = constructor.getParameterTypes();
         if (constructorArgNames.size() == paramTypes.length) {
           List<String> paramNames = getArgNames(constructor);
-          if (constructorArgNames.containsAll(paramNames)
-              && argTypesMatch(constructorArgNames, paramTypes, paramNames)) {
+          if (constructorArgNames.containsAll(paramNames) && argTypesMatch(constructorArgNames, paramTypes, paramNames)) {
             return paramNames;
           }
         }
@@ -165,8 +180,7 @@ public class ResultMap {
       return null;
     }
 
-    private boolean argTypesMatch(final List<String> constructorArgNames,
-        Class<?>[] paramTypes, List<String> paramNames) {
+    private boolean argTypesMatch(final List<String> constructorArgNames, Class<?>[] paramTypes, List<String> paramNames) {
       for (int i = 0; i < constructorArgNames.size(); i++) {
         Class<?> actualType = paramTypes[paramNames.indexOf(constructorArgNames.get(i))];
         Class<?> specifiedType = resultMap.constructorResultMappings.get(i).getJavaType();
@@ -188,6 +202,7 @@ public class ResultMap {
       List<String> paramNames = new ArrayList<String>();
       List<String> actualParamNames = null;
       final Annotation[][] paramAnnotations = constructor.getParameterAnnotations();
+      //
       int paramCount = paramAnnotations.length;
       for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
         String name = null;
