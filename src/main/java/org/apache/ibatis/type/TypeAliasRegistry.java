@@ -33,7 +33,7 @@ import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.io.Resources;
 
 /**
- * @author Clinton Begin
+ * @author Clinton Begin   名字到class的简单映射
  */
 public class TypeAliasRegistry {
 
@@ -125,19 +125,21 @@ public class TypeAliasRegistry {
     registerAliases(packageName, Object.class);
   }
 
+  // packageName下的superType子类
   public void registerAliases(String packageName, Class<?> superType){
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
-    Set<Class<? extends Class<?>>> typeSet = resolverUtil.getClasses();
+    Set<Class<? extends Class<?>>> typeSet = resolverUtil.getClasses();   // 首先找到的是 packageName下所有superType的子类
     for(Class<?> type : typeSet){
       // Ignore inner classes and interfaces (including package-info.java)
       // Skip also inner classes. See issue #6
-      if (!type.isAnonymousClass() && !type.isInterface() && !type.isMemberClass()) {
+      if (!type.isAnonymousClass() && !type.isInterface() && !type.isMemberClass()) { //不能是匿名 接口 成员类
         registerAlias(type);
       }
     }
   }
 
+  // 如果指定了alias注解，则取alias注解的值，否则取class的simpleName
   public void registerAlias(Class<?> type) {
     String alias = type.getSimpleName();
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
@@ -147,6 +149,7 @@ public class TypeAliasRegistry {
     registerAlias(alias, type);
   }
 
+  // 注册别名
   public void registerAlias(String alias, Class<?> value) {
     if (alias == null) {
       throw new TypeException("The parameter alias cannot be null");

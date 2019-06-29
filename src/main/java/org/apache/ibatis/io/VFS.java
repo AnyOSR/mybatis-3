@@ -60,8 +60,7 @@ public abstract class VFS {
           vfs = impl.newInstance();
           if (vfs == null || !vfs.isValid()) {
             if (log.isDebugEnabled()) {
-              log.debug("VFS implementation " + impl.getName() +
-                  " is not valid in this environment.");
+              log.debug("VFS implementation " + impl.getName() + " is not valid in this environment.");
             }
           }
         } catch (InstantiationException e) {

@@ -25,9 +25,9 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
- * <p>ResolverUtil is used to locate classes that are available in the/a class path and meet
- * arbitrary conditions. The two most common conditions are that a class implements/extends
- * another class, or that is it annotated with a specific annotation. However, through the use
+ * <p>ResolverUtil is used to locate classes that are available in the/a class path and meet       ResolverUtil是用于 在任意的限制条件下，去classpath下加载类
+ * arbitrary conditions. The two most common conditions are that a class implements/extends        其中一种比较常见的情况是：一个类实现了另一个类，或者它自己上面有一个特别的注解
+ * another class, or that is it annotated with a specific annotation. However, through the use     通过使用Test
  * of the {@link Test} class it is possible to search using arbitrary conditions.</p>
  *
  * <p>A ClassLoader is used to locate all locations (directories and jar files) in the class
@@ -68,7 +68,7 @@ public class ResolverUtil<T> {
    */
   public interface Test {
     /**
-     * Will be called repeatedly with candidate classes. Must return True if a class
+     * Will be called repeatedly with candidate classes. Must return True if a class       type是否应该被包含在结果里面
      * is to be included in the results, false otherwise.
      */
     boolean matches(Class<?> type);
@@ -78,6 +78,7 @@ public class ResolverUtil<T> {
    * A Test that checks to see if each class is assignable to the provided class. Note
    * that this test will match the parent type itself if it is presented for matching.
    */
+  //要检测的类是不是parent自身或其子类
   public static class IsA implements Test {
     private Class<?> parent;
 
@@ -102,6 +103,7 @@ public class ResolverUtil<T> {
    * A Test that checks to see if each class is annotated with a specific annotation. If it
    * is, then the test returns true, otherwise false.
    */
+  // 检测某个类上是否存在某个特定的注解
   public static class AnnotatedWith implements Test {
     private Class<? extends Annotation> annotation;
 
@@ -250,7 +252,7 @@ public class ResolverUtil<T> {
   @SuppressWarnings("unchecked")
   protected void addIfMatching(Test test, String fqn) {
     try {
-      String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');
+      String externalName = fqn.substring(0, fqn.indexOf('.')).replace('/', '.');   // .class前面那一截
       ClassLoader loader = getClassLoader();
       if (log.isDebugEnabled()) {
         log.debug("Checking to see if class " + externalName + " matches criteria [" + test + "]");

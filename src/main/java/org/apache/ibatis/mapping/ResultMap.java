@@ -118,7 +118,7 @@ public class ResultMap {
           resultMap.mappedProperties.add(property);
         }
 
-        //构建constructorResultMappings 或者 propertyResultMappings 二选一
+        // 构建constructorResultMappings 或者 propertyResultMappings 二选一
         // 优先constructorResultMappings
         if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {
           resultMap.constructorResultMappings.add(resultMapping);
