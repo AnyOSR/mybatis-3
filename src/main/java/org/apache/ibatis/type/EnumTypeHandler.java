@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * @author Clinton Begin
+ * @author Clinton Begin   类型参数必然为泛型
  */
 public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
@@ -36,9 +36,9 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
-    if (jdbcType == null) {
+    if (jdbcType == null) {   // jdbcType为null，则setString 用枚举的name
       ps.setString(i, parameter.name());
-    } else {
+    } else {                 // 否则，设定为给定的类型
       ps.setObject(i, parameter.name(), jdbcType.TYPE_CODE); // see r3589
     }
   }

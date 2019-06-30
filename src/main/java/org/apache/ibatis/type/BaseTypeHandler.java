@@ -42,7 +42,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
         throw new TypeException("JDBC requires that the JdbcType must be specified for all nullable parameters.");
       }
       try {
-        ps.setNull(i, jdbcType.TYPE_CODE);
+        ps.setNull(i, jdbcType.TYPE_CODE);     // 将下标为i的参数设置为null，不同类型code不一样
       } catch (SQLException e) {
         throw new TypeException("Error setting null for parameter #" + i + " with JdbcType " + jdbcType + " . " +
                 "Try setting a different JdbcType for this parameter or a different jdbcTypeForNull configuration property. " +
@@ -67,7 +67,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
     } catch (Exception e) {
       throw new ResultMapException("Error attempting to get column '" + columnName + "' from result set.  Cause: " + e, e);
     }
-    if (rs.wasNull()) {
+    if (rs.wasNull()) {   // 先读取再判断
       return null;
     } else {
       return result;
@@ -89,6 +89,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
     }
   }
 
+  // 存储过程？
   @Override
   public T getResult(CallableStatement cs, int columnIndex) throws SQLException {
     T result;
