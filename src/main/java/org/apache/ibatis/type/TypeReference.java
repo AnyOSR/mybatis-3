@@ -30,21 +30,24 @@ public abstract class TypeReference<T> {
   private final Type rawType;
 
   protected TypeReference() {
-    rawType = getSuperclassTypeParameter(getClass());
+    rawType = getSuperclassTypeParameter(getClass());   // 子类实例
   }
 
   Type getSuperclassTypeParameter(Class<?> clazz) {
     Type genericSuperclass = clazz.getGenericSuperclass();
     if (genericSuperclass instanceof Class) {
       // try to climb up the hierarchy until meet something useful
-      if (TypeReference.class != genericSuperclass) {
+      if (TypeReference.class != genericSuperclass) {   //说明还是子类
         return getSuperclassTypeParameter(clazz.getSuperclass());
       }
 
+      // 父类为TypeReference，则
       throw new TypeException("'" + getClass() + "' extends TypeReference but misses the type parameter. "
         + "Remove the extension or add a type parameter to it.");
     }
 
+    // 则肯定是参数化类型  如果TypeReference的子类有自己的类型变量，则拿不到TypeReference里面的T
+    // 如果一个类有自己的类型变量，则是泛型类
     Type rawType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
     // TODO remove this when Reflector is fixed to return Types
     if (rawType instanceof ParameterizedType) {
