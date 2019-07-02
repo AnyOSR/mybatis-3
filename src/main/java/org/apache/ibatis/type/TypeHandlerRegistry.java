@@ -49,7 +49,7 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.reflection.Jdk;
 
 /**
- * @author Clinton Begin
+ * @author Clinton Begin     一个java类型会映射到多个jdbc类型，也会有多种handler
  * @author Kazuki Shimizu
  */
 public final class TypeHandlerRegistry {
@@ -223,24 +223,25 @@ public final class TypeHandlerRegistry {
     TypeHandler<?> handler = null;
     if (jdbcHandlerMap != null) {
       handler = jdbcHandlerMap.get(jdbcType);
-      if (handler == null) {
+      if (handler == null) {        // 尝试获取jdbcType为null的
         handler = jdbcHandlerMap.get(null);
       }
-      if (handler == null) {
+      if (handler == null) {       // 如果还为null
         // #591
-        handler = pickSoleHandler(jdbcHandlerMap);
+        handler = pickSoleHandler(jdbcHandlerMap); // 如果所有的class都一样
       }
     }
     // type drives generics here
     return (TypeHandler<T>) handler;
   }
 
+  // 获取type的JdbcHandlerMap并注册，然后返回
   private Map<JdbcType, TypeHandler<?>> getJdbcHandlerMap(Type type) {
     Map<JdbcType, TypeHandler<?>> jdbcHandlerMap = TYPE_HANDLER_MAP.get(type);
     if (NULL_TYPE_HANDLER_MAP.equals(jdbcHandlerMap)) {
       return null;
     }
-    if (jdbcHandlerMap == null && type instanceof Class) {
+    if (jdbcHandlerMap == null && type instanceof Class) { // 如果是null，尝试注册一次
       Class<?> clazz = (Class<?>) type;
       if (clazz.isEnum()) {
         jdbcHandlerMap = getJdbcHandlerMapForEnumInterfaces(clazz, clazz);
@@ -252,10 +253,13 @@ public final class TypeHandlerRegistry {
         jdbcHandlerMap = getJdbcHandlerMapForSuperclass(clazz);
       }
     }
-    TYPE_HANDLER_MAP.put(type, jdbcHandlerMap == null ? NULL_TYPE_HANDLER_MAP : jdbcHandlerMap);
+    TYPE_HANDLER_MAP.put(type, jdbcHandlerMap == null ? NULL_TYPE_HANDLER_MAP : jdbcHandlerMap);  // 如果之前没有注册，则注册一个NULL_TYPE_HANDLER_MAP
     return jdbcHandlerMap;
   }
 
+  // 在clazz的父接口中寻找
+  // 存在于TYPE_HANDLER_MAP key中的
+  // 且构造函数为enumClazz的JdbcHandlerMap
   private Map<JdbcType, TypeHandler<?>> getJdbcHandlerMapForEnumInterfaces(Class<?> clazz, Class<?> enumClazz) {
     for (Class<?> iface : clazz.getInterfaces()) {
       Map<JdbcType, TypeHandler<?>> jdbcHandlerMap = TYPE_HANDLER_MAP.get(iface);
@@ -355,10 +359,10 @@ public final class TypeHandlerRegistry {
         register(javaType, handledJdbcType, typeHandler);
       }
       if (mappedJdbcTypes.includeNullJdbcType()) {
-        register(javaType, null, typeHandler);
+        register(javaType, null, typeHandler);    // 注册了一个jdbcType为null的
       }
     } else {
-      register(javaType, null, typeHandler);
+      register(javaType, null, typeHandler);      // 没有指定JdbcType
     }
   }
 
