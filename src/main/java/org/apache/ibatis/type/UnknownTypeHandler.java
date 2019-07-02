@@ -68,9 +68,10 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
     return cs.getObject(columnIndex);
   }
 
+  // 获取 对应于parameter.getClass()和jdbcType的handler
   private TypeHandler<? extends Object> resolveTypeHandler(Object parameter, JdbcType jdbcType) {
     TypeHandler<? extends Object> handler;
-    if (parameter == null) {
+    if (parameter == null) {            // 如果参数为null
       handler = OBJECT_TYPE_HANDLER;
     } else {
       handler = typeHandlerRegistry.getTypeHandler(parameter.getClass(), jdbcType);
@@ -86,11 +87,11 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
     try {
       Map<String,Integer> columnIndexLookup;
       columnIndexLookup = new HashMap<String,Integer>();
-      ResultSetMetaData rsmd = rs.getMetaData();
+      ResultSetMetaData rsmd = rs.getMetaData();    // 获取元数据
       int count = rsmd.getColumnCount();
       for (int i=1; i <= count; i++) {
         String name = rsmd.getColumnName(i);
-        columnIndexLookup.put(name,i);
+        columnIndexLookup.put(name,i);              // name和index的下表关系
       }
       Integer columnIndex = columnIndexLookup.get(column);
       TypeHandler<?> handler = null;
@@ -106,6 +107,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
     }
   }
 
+  // 返回结果元数据 列标
   private TypeHandler<?> resolveTypeHandler(ResultSetMetaData rsmd, Integer columnIndex) throws SQLException {
     TypeHandler<?> handler = null;
     JdbcType jdbcType = safeGetJdbcTypeForColumn(rsmd, columnIndex);
@@ -120,6 +122,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
     return handler;
   }
 
+  // 从元数据中获取列下标对应的Types类型，然后返回对应的JdbcType
   private JdbcType safeGetJdbcTypeForColumn(ResultSetMetaData rsmd, Integer columnIndex) {
     try {
       return JdbcType.forCode(rsmd.getColumnType(columnIndex));
@@ -128,6 +131,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
     }
   }
 
+  // 根据名字获取class
   private Class<?> safeGetClassForColumn(ResultSetMetaData rsmd, Integer columnIndex) {
     try {
       return Resources.classForName(rsmd.getColumnClassName(columnIndex));

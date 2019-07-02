@@ -275,6 +275,7 @@ public final class TypeHandlerRegistry {
     return null;
   }
 
+  // 从superclass向上一直找
   private Map<JdbcType, TypeHandler<?>> getJdbcHandlerMapForSuperclass(Class<?> clazz) {
     Class<?> superclass =  clazz.getSuperclass();
     if (superclass == null || Object.class.equals(superclass)) {
@@ -288,12 +289,13 @@ public final class TypeHandlerRegistry {
     }
   }
 
+  //所有的TypeHandler是否是同一个class，是则返回，否则返回null
   private TypeHandler<?> pickSoleHandler(Map<JdbcType, TypeHandler<?>> jdbcHandlerMap) {
     TypeHandler<?> soleHandler = null;
     for (TypeHandler<?> handler : jdbcHandlerMap.values()) {
       if (soleHandler == null) {
         soleHandler = handler;
-      } else if (!handler.getClass().equals(soleHandler.getClass())) {
+      } else if (!handler.getClass().equals(soleHandler.getClass())) {  // 如果出现不同的class
         // More than one type handlers registered.
         return null;
       }
@@ -326,7 +328,7 @@ public final class TypeHandlerRegistry {
       }
     }
     // @since 3.1.0 - try to auto-discover the mapped type
-    if (!mappedTypeFound && typeHandler instanceof TypeReference) {
+    if (!mappedTypeFound && typeHandler instanceof TypeReference) {   //如果是TypeReference
       try {
         TypeReference<T> typeReference = (TypeReference<T>) typeHandler;
         register(typeReference.getRawType(), typeHandler);
@@ -347,7 +349,7 @@ public final class TypeHandlerRegistry {
   }
 
   private <T> void register(Type javaType, TypeHandler<? extends T> typeHandler) {
-    MappedJdbcTypes mappedJdbcTypes = typeHandler.getClass().getAnnotation(MappedJdbcTypes.class);
+    MappedJdbcTypes mappedJdbcTypes = typeHandler.getClass().getAnnotation(MappedJdbcTypes.class); //检查类上是否有MappedJdbcTypes注解
     if (mappedJdbcTypes != null) {
       for (JdbcType handledJdbcType : mappedJdbcTypes.value()) {
         register(javaType, handledJdbcType, typeHandler);
@@ -370,6 +372,7 @@ public final class TypeHandlerRegistry {
     register((Type) type, jdbcType, handler);
   }
 
+  //注册handler
   private void register(Type javaType, JdbcType jdbcType, TypeHandler<?> handler) {
     if (javaType != null) {
       Map<JdbcType, TypeHandler<?>> map = TYPE_HANDLER_MAP.get(javaType);
@@ -390,8 +393,8 @@ public final class TypeHandlerRegistry {
 
   public void register(Class<?> typeHandlerClass) {
     boolean mappedTypeFound = false;
-    MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);
-    if (mappedTypes != null) {
+    MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);   // 类上的MappedTypes注解
+    if (mappedTypes != null) {                                                     // 该注解的values是该typeHandler能处理的javaType
       for (Class<?> javaTypeClass : mappedTypes.value()) {
         register(javaTypeClass, typeHandlerClass);
         mappedTypeFound = true;
@@ -419,12 +422,12 @@ public final class TypeHandlerRegistry {
   }
 
   // Construct a handler (used also from Builders)
-
+  // 构建一个TypeHandler的实例
   @SuppressWarnings("unchecked")
   public <T> TypeHandler<T> getInstance(Class<?> javaTypeClass, Class<?> typeHandlerClass) {
     if (javaTypeClass != null) {
       try {
-        Constructor<?> c = typeHandlerClass.getConstructor(Class.class);
+        Constructor<?> c = typeHandlerClass.getConstructor(Class.class);  //如果存在对应于javaTypeClass的构造器
         return (TypeHandler<T>) c.newInstance(javaTypeClass);
       } catch (NoSuchMethodException ignored) {
         // ignored
@@ -433,7 +436,7 @@ public final class TypeHandlerRegistry {
       }
     }
     try {
-      Constructor<?> c = typeHandlerClass.getConstructor();
+      Constructor<?> c = typeHandlerClass.getConstructor();   // 否则用默认的构造器
       return (TypeHandler<T>) c.newInstance();
     } catch (Exception e) {
       throw new TypeException("Unable to find a usable constructor for " + typeHandlerClass, e);
@@ -441,12 +444,12 @@ public final class TypeHandlerRegistry {
   }
 
   // scan
-
+  // 注册packageName下所有TypeHandler的子类
   public void register(String packageName) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<Class<?>>();
     resolverUtil.find(new ResolverUtil.IsA(TypeHandler.class), packageName);
     Set<Class<? extends Class<?>>> handlerSet = resolverUtil.getClasses();
-    for (Class<?> type : handlerSet) {
+    for (Class<?> type : handlerSet) {   // 对于所有的TypeHandler子类
       //Ignore inner classes and interfaces (including package-info.java) and abstract classes
       if (!type.isAnonymousClass() && !type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
         register(type);
