@@ -30,6 +30,8 @@ public class GenericTokenParser {
     this.handler = handler;
   }
 
+  // offset start
+  // -------${
   public String parse(String text) {
     if (text == null || text.isEmpty()) {
       return "";
@@ -43,10 +45,14 @@ public class GenericTokenParser {
     int offset = 0;
     final StringBuilder builder = new StringBuilder();
     StringBuilder expression = null;
+
+    // openToken存在
     while (start > -1) {
+      // openToken不在第一位且前一位为\
       if (start > 0 && src[start - 1] == '\\') {
         // this open token is escaped. remove the backslash and continue.
-        builder.append(src, offset, start - offset - 1).append(openToken);
+        // 跳过当前openToken，不解析
+        builder.append(src, offset, start - offset - 1).append(openToken); // 去掉\ 然后append上openToken，不解析
         offset = start + openToken.length();
       } else {
         // found open token. let's search close token.
@@ -55,15 +61,16 @@ public class GenericTokenParser {
         } else {
           expression.setLength(0);
         }
-        builder.append(src, offset, start - offset);
+        builder.append(src, offset, start - offset);   //append上
         offset = start + openToken.length();
-        int end = text.indexOf(closeToken, offset);
+        int end = text.indexOf(closeToken, offset);        // start offset end
         while (end > -1) {
+          // 前面有\号 去掉继续寻找
           if (end > offset && src[end - 1] == '\\') {
             // this close token is escaped. remove the backslash and continue.
             expression.append(src, offset, end - offset - 1).append(closeToken);
             offset = end + closeToken.length();
-            end = text.indexOf(closeToken, offset);
+            end = text.indexOf(closeToken, offset);  //寻找下一个end
           } else {
             expression.append(src, offset, end - offset);
             offset = end + closeToken.length();
@@ -72,15 +79,17 @@ public class GenericTokenParser {
         }
         if (end == -1) {
           // close token was not found.
-          builder.append(src, start, src.length - start);
+          builder.append(src, start, src.length - start);  // 没有找到，之后所有的都是
           offset = src.length;
         } else {
-          builder.append(handler.handleToken(expression.toString()));
+          builder.append(handler.handleToken(expression.toString()));  // 否则，解析
           offset = end + closeToken.length();
         }
       }
-      start = text.indexOf(openToken, offset);
+      start = text.indexOf(openToken, offset);   //找到下一个start start>offset
     }
+
+    //之后剩余的append上
     if (offset < src.length) {
       builder.append(src, offset, src.length - offset);
     }

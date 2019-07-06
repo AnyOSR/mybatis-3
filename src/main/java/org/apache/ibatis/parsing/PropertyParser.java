@@ -71,26 +71,29 @@ public class PropertyParser {
       return (variables == null) ? defaultValue : variables.getProperty(key, defaultValue);
     }
 
+    // 值存在则返回，否则返回${content}
     @Override
     public String handleToken(String content) {
       if (variables != null) {
         String key = content;
-        if (enableDefaultValue) {
+
+        if (enableDefaultValue) {   // 允许默认值
           final int separatorIndex = content.indexOf(defaultValueSeparator);
           String defaultValue = null;
-          if (separatorIndex >= 0) {
+          if (separatorIndex >= 0) { // 获取key value
             key = content.substring(0, separatorIndex);
             defaultValue = content.substring(separatorIndex + defaultValueSeparator.length());
           }
-          if (defaultValue != null) {
+          if (defaultValue != null) {  // 存在默认值
             return variables.getProperty(key, defaultValue);
           }
         }
+        // 如果已经存在
         if (variables.containsKey(key)) {
           return variables.getProperty(key);
         }
       }
-      return "${" + content + "}";
+      return "${" + content + "}";  // 否则返回${content}
     }
   }
 
