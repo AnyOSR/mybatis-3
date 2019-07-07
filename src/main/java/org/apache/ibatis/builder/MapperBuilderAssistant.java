@@ -100,6 +100,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return currentNamespace + "." + base;   // 返回currentNamespace.base
   }
 
+  // 找到namespace对应的cache，并设置成当前cache
   public Cache useCacheRef(String namespace) {
     if (namespace == null) {
       throw new BuilderException("cache-ref element requires a namespace attribute.");

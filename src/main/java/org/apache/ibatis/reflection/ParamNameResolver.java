@@ -50,20 +50,21 @@ public class ParamNameResolver {
 
   private boolean hasParamAnnotation;
 
+  // 解析参数
   public ParamNameResolver(Configuration config, Method method) {
-    final Class<?>[] paramTypes = method.getParameterTypes();
-    final Annotation[][] paramAnnotations = method.getParameterAnnotations();
+    final Class<?>[] paramTypes = method.getParameterTypes();                   // 入参类型
+    final Annotation[][] paramAnnotations = method.getParameterAnnotations();   // 入参上的注解
     final SortedMap<Integer, String> map = new TreeMap<Integer, String>();
     int paramCount = paramAnnotations.length;
     // get names from @Param annotations
-    for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
+    for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {   // 遍历参数
       if (isSpecialParameter(paramTypes[paramIndex])) {
         // skip special parameters
         continue;
       }
       String name = null;
-      for (Annotation annotation : paramAnnotations[paramIndex]) {
-        if (annotation instanceof Param) {
+      for (Annotation annotation : paramAnnotations[paramIndex]) {  // 当前参数是否有Param注解
+        if (annotation instanceof Param) {  // Param注解
           hasParamAnnotation = true;
           name = ((Param) annotation).value();
           break;
@@ -77,7 +78,7 @@ public class ParamNameResolver {
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
-          name = String.valueOf(map.size());
+          name = String.valueOf(map.size());             // 利用index作为参数
         }
       }
       map.put(paramIndex, name);

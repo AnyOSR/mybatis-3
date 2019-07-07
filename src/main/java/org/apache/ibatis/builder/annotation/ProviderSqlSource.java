@@ -59,18 +59,19 @@ public class ProviderSqlSource implements SqlSource {
     try {
       this.configuration = configuration;
       this.sqlSourceParser = new SqlSourceBuilder(configuration);
-      this.providerType = (Class<?>) provider.getClass().getMethod("type").invoke(provider);
-      providerMethodName = (String) provider.getClass().getMethod("method").invoke(provider);
+      this.providerType = (Class<?>) provider.getClass().getMethod("type").invoke(provider);    // type属性
+      providerMethodName = (String) provider.getClass().getMethod("method").invoke(provider);   // method属性
 
+      // 遍历class的method
       for (Method m : this.providerType.getMethods()) {
-        if (providerMethodName.equals(m.getName()) && CharSequence.class.isAssignableFrom(m.getReturnType())) {
+        if (providerMethodName.equals(m.getName()) && CharSequence.class.isAssignableFrom(m.getReturnType())) {  // 名字相同 返回类型必须是String？为啥？sqlProvider是干嘛的？
           if (providerMethod != null){
             throw new BuilderException("Error creating SqlSource for SqlProvider. Method '"
                     + providerMethodName + "' is found multiple in SqlProvider '" + this.providerType.getName()
                     + "'. Sql provider method can not overload.");
           }
           this.providerMethod = m;
-          this.providerMethodArgumentNames = new ParamNameResolver(configuration, m).getNames();
+          this.providerMethodArgumentNames = new ParamNameResolver(configuration, m).getNames();    // 解析参数
           this.providerMethodParameterTypes = m.getParameterTypes();
         }
       }
@@ -80,13 +81,14 @@ public class ProviderSqlSource implements SqlSource {
       throw new BuilderException("Error creating SqlSource for SqlProvider.  Cause: " + e, e);
     }
     if (this.providerMethod == null) {
-      throw new BuilderException("Error creating SqlSource for SqlProvider. Method '"
-          + providerMethodName + "' not found in SqlProvider '" + this.providerType.getName() + "'.");
+      throw new BuilderException("Error creating SqlSource for SqlProvider. Method '" + providerMethodName + "' not found in SqlProvider '" + this.providerType.getName() + "'.");
     }
+
+    //
     for (int i = 0; i< this.providerMethodParameterTypes.length; i++) {
       Class<?> parameterType = this.providerMethodParameterTypes[i];
       if (parameterType == ProviderContext.class) {
-        if (this.providerContext != null){
+        if (this.providerContext != null){  //如果出现了多个ProviderContext
           throw new BuilderException("Error creating SqlSource for SqlProvider. ProviderContext found multiple in SqlProvider method ("
               + this.providerType.getName() + "." + providerMethod.getName()
               + "). ProviderContext can not define multiple in SqlProvider method argument.");

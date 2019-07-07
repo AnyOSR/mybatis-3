@@ -118,6 +118,7 @@ public class MapperAnnotationBuilder {
     sqlProviderAnnotationTypes.add(DeleteProvider.class);
   }
 
+  // 构建mapper
   public void parse() {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
@@ -185,14 +186,14 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  // 解析property 并替换
   private Properties convertToProperties(Property[] properties) {
     if (properties.length == 0) {
       return null;
     }
     Properties props = new Properties();
     for (Property property : properties) {
-      props.setProperty(property.name(),
-          PropertyParser.parse(property.value(), configuration.getVariables()));
+      props.setProperty(property.name(), PropertyParser.parse(property.value(), configuration.getVariables()));
     }
     return props;
   }
@@ -202,13 +203,13 @@ public class MapperAnnotationBuilder {
     if (cacheDomainRef != null) {
       Class<?> refType = cacheDomainRef.value();
       String refName = cacheDomainRef.name();
-      if (refType == void.class && refName.isEmpty()) {
+      if (refType == void.class && refName.isEmpty()) {  // 什么值都没有
         throw new BuilderException("Should be specified either value() or name() attribute in the @CacheNamespaceRef");
       }
-      if (refType != void.class && !refName.isEmpty()) {
+      if (refType != void.class && !refName.isEmpty()) {   // 都设置了
         throw new BuilderException("Cannot use both value() and name() attribute in the @CacheNamespaceRef");
       }
-      String namespace = (refType != void.class) ? refType.getName() : refName;
+      String namespace = (refType != void.class) ? refType.getName() : refName;   // 优先class 否则name
       assistant.useCacheRef(namespace);
     }
   }
@@ -223,6 +224,7 @@ public class MapperAnnotationBuilder {
     return resultMapId;
   }
 
+  // interface.id.parameter-
   private String generateResultMapName(Method method) {
     Results results = method.getAnnotation(Results.class);
     if (results != null && !results.id().isEmpty()) {
@@ -283,13 +285,14 @@ public class MapperAnnotationBuilder {
     return null;
   }
 
+  // 解析方法
   void parseStatement(Method method) {
     Class<?> parameterTypeClass = getParameterType(method);
     LanguageDriver languageDriver = getLanguageDriver(method);
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
       Options options = method.getAnnotation(Options.class);
-      final String mappedStatementId = type.getName() + "." + method.getName();
+      final String mappedStatementId = type.getName() + "." + method.getName();   // 类名.方法名
       Integer fetchSize = null;
       Integer timeout = null;
       StatementType statementType = StatementType.PREPARED;
@@ -302,6 +305,8 @@ public class MapperAnnotationBuilder {
       KeyGenerator keyGenerator;
       String keyProperty = "id";
       String keyColumn = null;
+
+      // 如果是insert 或者 update
       if (SqlCommandType.INSERT.equals(sqlCommandType) || SqlCommandType.UPDATE.equals(sqlCommandType)) {
         // first check for SelectKey annotation - that overrides everything else
         SelectKey selectKey = method.getAnnotation(SelectKey.class);
@@ -391,10 +396,10 @@ public class MapperAnnotationBuilder {
     for (Class<?> currentParameterType : parameterTypes) {
       if (!RowBounds.class.isAssignableFrom(currentParameterType) && !ResultHandler.class.isAssignableFrom(currentParameterType)) {
         if (parameterType == null) {
-          parameterType = currentParameterType;
+          parameterType = currentParameterType;   // 如果只有一个参数，则为这个参数
         } else {
           // issue #135
-          parameterType = ParamMap.class;
+          parameterType = ParamMap.class;         // 否则，返回一个ParamMap
         }
       }
     }
@@ -456,14 +461,15 @@ public class MapperAnnotationBuilder {
     try {
       Class<? extends Annotation> sqlAnnotationType = getSqlAnnotationType(method);
       Class<? extends Annotation> sqlProviderAnnotationType = getSqlProviderAnnotationType(method);
+      // sqlAnnotation存在
       if (sqlAnnotationType != null) {
         if (sqlProviderAnnotationType != null) {
           throw new BindingException("You cannot supply both a static SQL and SqlProvider to method named " + method.getName());
         }
         Annotation sqlAnnotation = method.getAnnotation(sqlAnnotationType);
-        final String[] strings = (String[]) sqlAnnotation.getClass().getMethod("value").invoke(sqlAnnotation);
+        final String[] strings = (String[]) sqlAnnotation.getClass().getMethod("value").invoke(sqlAnnotation); // 获取注解配置的value
         return buildSqlSourceFromStrings(strings, parameterType, languageDriver);
-      } else if (sqlProviderAnnotationType != null) {
+      } else if (sqlProviderAnnotationType != null) {  // 否则 sqlProvider
         Annotation sqlProviderAnnotation = method.getAnnotation(sqlProviderAnnotationType);
         return new ProviderSqlSource(assistant.getConfiguration(), sqlProviderAnnotation, type, method);
       }
@@ -531,8 +537,7 @@ public class MapperAnnotationBuilder {
         flags.add(ResultFlag.ID);
       }
       @SuppressWarnings("unchecked")
-      Class<? extends TypeHandler<?>> typeHandler = (Class<? extends TypeHandler<?>>)
-              ((result.typeHandler() == UnknownTypeHandler.class) ? null : result.typeHandler());
+      Class<? extends TypeHandler<?>> typeHandler = (Class<? extends TypeHandler<?>>) ((result.typeHandler() == UnknownTypeHandler.class) ? null : result.typeHandler());
       ResultMapping resultMapping = assistant.buildResultMapping(
           resultType,
           nullOrEmpty(result.property()),
@@ -588,8 +593,7 @@ public class MapperAnnotationBuilder {
         flags.add(ResultFlag.ID);
       }
       @SuppressWarnings("unchecked")
-      Class<? extends TypeHandler<?>> typeHandler = (Class<? extends TypeHandler<?>>)
-              (arg.typeHandler() == UnknownTypeHandler.class ? null : arg.typeHandler());
+      Class<? extends TypeHandler<?>> typeHandler = (Class<? extends TypeHandler<?>>) (arg.typeHandler() == UnknownTypeHandler.class ? null : arg.typeHandler());
       ResultMapping resultMapping = assistant.buildResultMapping(
           resultType,
           nullOrEmpty(arg.name()),
