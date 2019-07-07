@@ -122,6 +122,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   // 根据sql建造
+  // select|insert|update|delete
   private void buildStatementFromContext(List<XNode> list) {
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());

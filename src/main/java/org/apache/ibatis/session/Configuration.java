@@ -874,7 +874,7 @@ public class Configuration {
       }
       if (key.contains(".")) {  //如果包含.
         final String shortKey = getShortName(key);
-        if (super.get(shortKey) == null) {  // 如果之前key对应的value不存在
+        if (super.get(shortKey) == null) {  // 如果之前shortKey对应的value不存在
           super.put(shortKey, value);
         } else {                            // 如果key对应的value存在，则加入一个value为shortKey的key
           super.put(shortKey, (V) new Ambiguity(shortKey));
