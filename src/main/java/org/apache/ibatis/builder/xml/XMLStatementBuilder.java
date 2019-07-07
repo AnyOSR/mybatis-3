@@ -53,6 +53,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
+  // MappedStatement
   public void parseStatementNode() {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
@@ -79,8 +80,8 @@ public class XMLStatementBuilder extends BaseBuilder {
     String nodeName = context.getNode().getNodeName();
     SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
-    boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);
-    boolean useCache = context.getBooleanAttribute("useCache", isSelect);
+    boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);  // 不是select的都要flush
+    boolean useCache = context.getBooleanAttribute("useCache", isSelect);       // select用cache
     boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
 
     // Include Fragments before parsing
@@ -101,8 +102,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     if (configuration.hasKeyGenerator(keyStatementId)) {
       keyGenerator = configuration.getKeyGenerator(keyStatementId);
     } else {
-      keyGenerator = context.getBooleanAttribute("useGeneratedKeys",
-          configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType))
+      keyGenerator = context.getBooleanAttribute("useGeneratedKeys", configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType))
           ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
     }
 
@@ -117,7 +117,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     if (configuration.getDatabaseId() != null) {
       parseSelectKeyNodes(id, selectKeyNodes, parameterTypeClass, langDriver, configuration.getDatabaseId());
     }
-    parseSelectKeyNodes(id, selectKeyNodes, parameterTypeClass, langDriver, null);
+    parseSelectKeyNodes(id, selectKeyNodes, parameterTypeClass, langDriver, null);  // 解析所有selectKey节点
     removeSelectKeyNodes(selectKeyNodes);
   }
 
@@ -131,6 +131,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     }
   }
 
+  //对SelectKey节点进行处理
   private void parseSelectKeyNode(String id, XNode nodeToHandle, Class<?> parameterTypeClass, LanguageDriver langDriver, String databaseId) {
     String resultType = nodeToHandle.getStringAttribute("resultType");
     Class<?> resultTypeClass = resolveClass(resultType);
@@ -161,9 +162,10 @@ public class XMLStatementBuilder extends BaseBuilder {
     id = builderAssistant.applyCurrentNamespace(id, false);
 
     MappedStatement keyStatement = configuration.getMappedStatement(id, false);
-    configuration.addKeyGenerator(id, new SelectKeyGenerator(keyStatement, executeBefore));
+    configuration.addKeyGenerator(id, new SelectKeyGenerator(keyStatement, executeBefore));    // 填充 keyGenerators
   }
 
+  // 移除selectNode
   private void removeSelectKeyNodes(List<XNode> selectKeyNodes) {
     for (XNode nodeToHandle : selectKeyNodes) {
       nodeToHandle.getParent().getNode().removeChild(nodeToHandle.getNode());
@@ -172,18 +174,18 @@ public class XMLStatementBuilder extends BaseBuilder {
 
   private boolean databaseIdMatchesCurrent(String id, String databaseId, String requiredDatabaseId) {
     if (requiredDatabaseId != null) {
-      if (!requiredDatabaseId.equals(databaseId)) {
+      if (!requiredDatabaseId.equals(databaseId)) { // 如果requiredDatabaseId存在且不等
         return false;
       }
     } else {
-      if (databaseId != null) {
+      if (databaseId != null) {  // 如果requiredDatabaseId和databaseId都不存在
         return false;
       }
       // skip this statement if there is a previous one with a not null databaseId
       id = builderAssistant.applyCurrentNamespace(id, false);
       if (this.configuration.hasStatement(id, false)) {
         MappedStatement previous = this.configuration.getMappedStatement(id, false); // issue #2
-        if (previous.getDatabaseId() != null) {
+        if (previous.getDatabaseId() != null) {  //之前的有
           return false;
         }
       }

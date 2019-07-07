@@ -73,6 +73,7 @@ public class XNode {
     return builder.toString();
   }
 
+  // 从子到父
   public String getValueBasedIdentifier() {
     StringBuilder builder = new StringBuilder();
     XNode current = this;
@@ -80,14 +81,11 @@ public class XNode {
       if (current != this) {
         builder.insert(0, "_");
       }
-      String value = current.getStringAttribute("id",
-          current.getStringAttribute("value",
-              current.getStringAttribute("property", null)));
+      String value = current.getStringAttribute("id", current.getStringAttribute("value", current.getStringAttribute("property", null)));
       if (value != null) {
         value = value.replace('.', '_');
         builder.insert(0, "]");
-        builder.insert(0,
-            value);
+        builder.insert(0, value);
         builder.insert(0, "[");
       }
       builder.insert(0, current.getName());

@@ -95,7 +95,7 @@ public class CacheBuilder {
     setCacheProperties(cache);
     // issue #352, do not apply decorators to custom caches
     if (PerpetualCache.class.equals(cache.getClass())) {
-      for (Class<? extends Cache> decorator : decorators) {
+      for (Class<? extends Cache> decorator : decorators) {   // 构建适配缓存器
         cache = newCacheDecoratorInstance(decorator, cache);
         setCacheProperties(cache);
       }
@@ -115,6 +115,7 @@ public class CacheBuilder {
     }
   }
 
+  //修饰器模式
   private Cache setStandardDecorators(Cache cache) {
     try {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
@@ -139,6 +140,7 @@ public class CacheBuilder {
     }
   }
 
+  // 为cache设置属性
   private void setCacheProperties(Cache cache) {
     if (properties != null) {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
@@ -176,16 +178,17 @@ public class CacheBuilder {
         }
       }
     }
+    // 如果需要初始化
     if (InitializingObject.class.isAssignableFrom(cache.getClass())){
       try {
         ((InitializingObject) cache).initialize();
       } catch (Exception e) {
-        throw new CacheException("Failed cache initialization for '" +
-            cache.getId() + "' on '" + cache.getClass().getName() + "'", e);
+        throw new CacheException("Failed cache initialization for '" + cache.getId() + "' on '" + cache.getClass().getName() + "'", e);
       }
     }
   }
 
+  // 创建一个cache实例，构造函数的参数为id
   private Cache newBaseCacheInstance(Class<? extends Cache> cacheClass, String id) {
     Constructor<? extends Cache> cacheConstructor = getBaseCacheConstructor(cacheClass);
     try {
@@ -213,6 +216,7 @@ public class CacheBuilder {
     }
   }
 
+  // 返回一个构造函数入参为Cache类型的构造函数 修饰器
   private Constructor<? extends Cache> getCacheDecoratorConstructor(Class<? extends Cache> cacheClass) {
     try {
       return cacheClass.getConstructor(Cache.class);

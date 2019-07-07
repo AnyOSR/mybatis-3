@@ -58,18 +58,18 @@ public class XMLIncludeTransformer {
    */
   private void applyIncludes(Node source, final Properties variablesContext, boolean included) {
     if (source.getNodeName().equals("include")) {
-      Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
+      Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);  // 找到refid对应的node
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
       applyIncludes(toInclude, toIncludeContext, true);
-      if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
-        toInclude = source.getOwnerDocument().importNode(toInclude, true);
+      if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {                          // 定义的地方不一样
+        toInclude = source.getOwnerDocument().importNode(toInclude, true);                // 则引入待包含的节点
       }
-      source.getParentNode().replaceChild(toInclude, source);
+      source.getParentNode().replaceChild(toInclude, source);                                   // 实际替换
       while (toInclude.hasChildNodes()) {
-        toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);
+        toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);           // 将toInclude的所有子节点插入自己之前
       }
-      toInclude.getParentNode().removeChild(toInclude);
-    } else if (source.getNodeType() == Node.ELEMENT_NODE) {
+      toInclude.getParentNode().removeChild(toInclude);                                         // 移除自己
+    } else if (source.getNodeType() == Node.ELEMENT_NODE) {  // 如果是一个元素
       if (included && !variablesContext.isEmpty()) {
         // replace variables in attribute values
         NamedNodeMap attributes = source.getAttributes();
@@ -82,8 +82,7 @@ public class XMLIncludeTransformer {
       for (int i = 0; i < children.getLength(); i++) {
         applyIncludes(children.item(i), variablesContext, included);
       }
-    } else if (included && source.getNodeType() == Node.TEXT_NODE
-        && !variablesContext.isEmpty()) {
+    } else if (included && source.getNodeType() == Node.TEXT_NODE && !variablesContext.isEmpty()) {
       // replace variables in text node
       source.setNodeValue(PropertyParser.parse(source.getNodeValue(), variablesContext));
     }

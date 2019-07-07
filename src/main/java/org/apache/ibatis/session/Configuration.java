@@ -841,6 +841,7 @@ public class Configuration {
     }
   }
 
+  // String V
   protected static class StrictMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -4950446264854982944L;
@@ -871,11 +872,11 @@ public class Configuration {
       if (containsKey(key)) {
         throw new IllegalArgumentException(name + " already contains value for " + key);
       }
-      if (key.contains(".")) {
+      if (key.contains(".")) {  //如果包含.
         final String shortKey = getShortName(key);
-        if (super.get(shortKey) == null) {
+        if (super.get(shortKey) == null) {  // 如果之前key对应的value不存在
           super.put(shortKey, value);
-        } else {
+        } else {                            // 如果key对应的value存在，则加入一个value为shortKey的key
           super.put(shortKey, (V) new Ambiguity(shortKey));
         }
       }
@@ -887,13 +888,14 @@ public class Configuration {
       if (value == null) {
         throw new IllegalArgumentException(name + " does not contain value for " + key);
       }
-      if (value instanceof Ambiguity) {
+      if (value instanceof Ambiguity) {  //说明key里面有一个.  且这个key被put过两次
         throw new IllegalArgumentException(((Ambiguity) value).getSubject() + " is ambiguous in " + name
             + " (try using the full name including the namespace, or rename one of the entries)");
       }
       return value;
     }
 
+    // 返回最后一个.以后的String
     private String getShortName(String key) {
       final String[] keyParts = key.split("\\.");
       return keyParts[keyParts.length - 1];

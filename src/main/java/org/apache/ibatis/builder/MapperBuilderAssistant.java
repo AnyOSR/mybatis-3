@@ -73,12 +73,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
     if (currentNamespace == null) {
       throw new BuilderException("The mapper element requires a namespace attribute to be specified.");
     }
-
     if (this.currentNamespace != null && !this.currentNamespace.equals(currentNamespace)) {
-      throw new BuilderException("Wrong namespace. Expected '"
-          + this.currentNamespace + "' but found '" + currentNamespace + "'.");
+      throw new BuilderException("Wrong namespace. Expected '" + this.currentNamespace + "' but found '" + currentNamespace + "'.");
     }
-
     this.currentNamespace = currentNamespace;
   }
 
@@ -86,21 +83,21 @@ public class MapperBuilderAssistant extends BaseBuilder {
     if (base == null) {
       return null;
     }
-    if (isReference) {
+    if (isReference) {  // 如果是应用的话，别人的namespace肯定和this.currentNamespace不一致
       // is it qualified with any namespace yet?
-      if (base.contains(".")) {
-        return base;
+      if (base.contains(".")) {    // 所以只要有.就可以返回
+        return base;    // 如果isReference 且base包含.
       }
-    } else {
+    } else {  // 如果不是引用，则必须是currentNamespace.
       // is it qualified with this namespace yet?
-      if (base.startsWith(currentNamespace + ".")) {
+      if (base.startsWith(currentNamespace + ".")) {   // 如果base是以currentNamespace.开始
         return base;
       }
       if (base.contains(".")) {
         throw new BuilderException("Dots are not allowed in element names, please remove it from " + base);
       }
     }
-    return currentNamespace + "." + base;
+    return currentNamespace + "." + base;   // 返回currentNamespace.base
   }
 
   public Cache useCacheRef(String namespace) {
@@ -142,6 +139,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return cache;
   }
 
+  // 添加parameterMap
   public ParameterMap addParameterMap(String id, Class<?> parameterClass, List<ParameterMapping> parameterMappings) {
     id = applyCurrentNamespace(id, false);
     ParameterMap parameterMap = new ParameterMap.Builder(configuration, id, parameterClass, parameterMappings).build();
@@ -162,7 +160,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     // Class parameterType = parameterMapBuilder.type();
     Class<?> javaTypeClass = resolveParameterJavaType(parameterType, property, javaType, jdbcType);
-    TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);
+    TypeHandler<?> typeHandlerInstance = resolveTypeHandler(javaTypeClass, typeHandler);   // 创建一个TypeHandler的实例
 
     return new ParameterMapping.Builder(configuration, property, javaTypeClass)
         .jdbcType(jdbcType)
@@ -180,6 +178,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       Discriminator discriminator,
       List<ResultMapping> resultMappings,
       Boolean autoMapping) {
+
     id = applyCurrentNamespace(id, false);
     extend = applyCurrentNamespace(extend, true);
 
@@ -222,21 +221,8 @@ public class MapperBuilderAssistant extends BaseBuilder {
       JdbcType jdbcType,
       Class<? extends TypeHandler<?>> typeHandler,
       Map<String, String> discriminatorMap) {
-    ResultMapping resultMapping = buildResultMapping(
-        resultType,
-        null,
-        column,
-        javaType,
-        jdbcType,
-        null,
-        null,
-        null,
-        null,
-        typeHandler,
-        new ArrayList<ResultFlag>(),
-        null,
-        null,
-        false);
+
+    ResultMapping resultMapping = buildResultMapping(resultType, null, column, javaType, jdbcType, null, null, null, null, typeHandler, new ArrayList<ResultFlag>(), null, null, false);
     Map<String, String> namespaceDiscriminatorMap = new HashMap<String, String>();
     for (Map.Entry<String, String> e : discriminatorMap.entrySet()) {
       String resultMap = e.getValue();
@@ -299,7 +285,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
 
     MappedStatement statement = statementBuilder.build();
-    configuration.addMappedStatement(statement);
+    configuration.addMappedStatement(statement);     // 加入configuration
     return statement;
   }
 
@@ -307,10 +293,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return value == null ? defaultValue : value;
   }
 
-  private ParameterMap getStatementParameterMap(
-      String parameterMapName,
-      Class<?> parameterTypeClass,
-      String statementId) {
+  private ParameterMap getStatementParameterMap(String parameterMapName, Class<?> parameterTypeClass, String statementId) {
     parameterMapName = applyCurrentNamespace(parameterMapName, true);
     ParameterMap parameterMap = null;
     if (parameterMapName != null) {
@@ -437,6 +420,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return javaType;
   }
 
+  // 解析参数的类型
   private Class<?> resolveParameterJavaType(Class<?> resultType, String property, Class<?> javaType, JdbcType jdbcType) {
     if (javaType == null) {
       if (JdbcType.CURSOR.equals(jdbcType)) {
@@ -448,6 +432,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
         javaType = metaResultType.getGetterType(property);
       }
     }
+
     if (javaType == null) {
       javaType = Object.class;
     }

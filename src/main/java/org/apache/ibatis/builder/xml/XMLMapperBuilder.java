@@ -110,10 +110,10 @@ public class XMLMapperBuilder extends BaseBuilder {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
-      cacheRefElement(context.evalNode("cache-ref"));
-      cacheElement(context.evalNode("cache"));
-      parameterMapElement(context.evalNodes("/mapper/parameterMap"));
-      resultMapElements(context.evalNodes("/mapper/resultMap"));
+      cacheRefElement(context.evalNode("cache-ref"));   // cache-ref
+      cacheElement(context.evalNode("cache"));          // 解析cache
+      parameterMapElement(context.evalNodes("/mapper/parameterMap"));   // 解析parameterMap
+      resultMapElements(context.evalNodes("/mapper/resultMap"));        // resultMap
       sqlElement(context.evalNodes("/mapper/sql"));
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
@@ -121,6 +121,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  // 根据sql建造
   private void buildStatementFromContext(List<XNode> list) {
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
@@ -129,6 +130,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
+    // 遍历所有的sql  select|insert|update|delete
     for (XNode context : list) {
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
       try {
@@ -186,6 +188,7 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void cacheRefElement(XNode context) {
     if (context != null) {
+      // 将当前currentNameSpace的cache应用 refer到别的一个namespace
       configuration.addCacheRef(builderAssistant.getCurrentNamespace(), context.getStringAttribute("namespace"));
       CacheRefResolver cacheRefResolver = new CacheRefResolver(builderAssistant, context.getStringAttribute("namespace"));
       try {
@@ -216,8 +219,9 @@ public class XMLMapperBuilder extends BaseBuilder {
       String id = parameterMapNode.getStringAttribute("id");
       String type = parameterMapNode.getStringAttribute("type");
       Class<?> parameterClass = resolveClass(type);
-      List<XNode> parameterNodes = parameterMapNode.evalNodes("parameter");
+
       List<ParameterMapping> parameterMappings = new ArrayList<ParameterMapping>();
+      List<XNode> parameterNodes = parameterMapNode.evalNodes("parameter");
       for (XNode parameterNode : parameterNodes) {
         String property = parameterNode.getStringAttribute("property");
         String javaType = parameterNode.getStringAttribute("javaType");
@@ -254,19 +258,18 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private ResultMap resultMapElement(XNode resultMapNode, List<ResultMapping> additionalResultMappings) throws Exception {
     ErrorContext.instance().activity("processing " + resultMapNode.getValueBasedIdentifier());
-    String id = resultMapNode.getStringAttribute("id",
-        resultMapNode.getValueBasedIdentifier());
-    String type = resultMapNode.getStringAttribute("type",
-        resultMapNode.getStringAttribute("ofType",
-            resultMapNode.getStringAttribute("resultType",
-                resultMapNode.getStringAttribute("javaType"))));
+    String id = resultMapNode.getStringAttribute("id", resultMapNode.getValueBasedIdentifier());
+    String type = resultMapNode.getStringAttribute("type", resultMapNode.getStringAttribute("ofType", resultMapNode.getStringAttribute("resultType", resultMapNode.getStringAttribute("javaType"))));
     String extend = resultMapNode.getStringAttribute("extends");
     Boolean autoMapping = resultMapNode.getBooleanAttribute("autoMapping");
     Class<?> typeClass = resolveClass(type);
     Discriminator discriminator = null;
+
     List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
     resultMappings.addAll(additionalResultMappings);
+
     List<XNode> resultChildren = resultMapNode.getChildren();
+    // 遍历每一个子节点
     for (XNode resultChild : resultChildren) {
       if ("constructor".equals(resultChild.getName())) {
         processConstructorElement(resultChild, typeClass, resultMappings);
@@ -289,6 +292,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  //解析的结果放在resultMappings中
   private void processConstructorElement(XNode resultChild, Class<?> resultType, List<ResultMapping> resultMappings) throws Exception {
     List<XNode> argChildren = resultChild.getChildren();
     for (XNode argChild : argChildren) {
@@ -339,7 +343,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   
   private boolean databaseIdMatchesCurrent(String id, String databaseId, String requiredDatabaseId) {
     if (requiredDatabaseId != null) {
-      if (!requiredDatabaseId.equals(databaseId)) {
+      if (!requiredDatabaseId.equals(databaseId)) {   //
         return false;
       }
     } else {
@@ -368,8 +372,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     String javaType = context.getStringAttribute("javaType");
     String jdbcType = context.getStringAttribute("jdbcType");
     String nestedSelect = context.getStringAttribute("select");
-    String nestedResultMap = context.getStringAttribute("resultMap",
-        processNestedResultMappings(context, Collections.<ResultMapping> emptyList()));
+    String nestedResultMap = context.getStringAttribute("resultMap", processNestedResultMappings(context, Collections.<ResultMapping> emptyList()));
     String notNullColumn = context.getStringAttribute("notNullColumn");
     String columnPrefix = context.getStringAttribute("columnPrefix");
     String typeHandler = context.getStringAttribute("typeHandler");
@@ -384,9 +387,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
   
   private String processNestedResultMappings(XNode context, List<ResultMapping> resultMappings) throws Exception {
-    if ("association".equals(context.getName())
-        || "collection".equals(context.getName())
-        || "case".equals(context.getName())) {
+    if ("association".equals(context.getName()) || "collection".equals(context.getName()) || "case".equals(context.getName())) {
       if (context.getStringAttribute("select") == null) {
         ResultMap resultMap = resultMapElement(context, resultMappings);
         return resultMap.getId();
@@ -400,7 +401,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     if (namespace != null) {
       Class<?> boundType = null;
       try {
-        boundType = Resources.classForName(namespace);
+        boundType = Resources.classForName(namespace);  // 查找nameSpace对应的class
       } catch (ClassNotFoundException e) {
         //ignore, bound type is not required
       }
