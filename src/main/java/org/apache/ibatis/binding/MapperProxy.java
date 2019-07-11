@@ -47,9 +47,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
-      if (Object.class.equals(method.getDeclaringClass())) {
+      if (Object.class.equals(method.getDeclaringClass())) { // 如果是object类里面的方法
         return method.invoke(this, args);
-      } else if (isDefaultMethod(method)) {
+      } else if (isDefaultMethod(method)) {                  // 接口里面的默认方法
         return invokeDefaultMethod(proxy, method, args);
       }
     } catch (Throwable t) {
@@ -68,26 +68,24 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     return mapperMethod;
   }
 
+  // 默认方法调用
   @UsesJava7
-  private Object invokeDefaultMethod(Object proxy, Method method, Object[] args)
-      throws Throwable {
-    final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-        .getDeclaredConstructor(Class.class, int.class);
+  private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
+    // 第一个参数是lookupClass  第二个参数是allowedModes
+    final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
     if (!constructor.isAccessible()) {
       constructor.setAccessible(true);
     }
     final Class<?> declaringClass = method.getDeclaringClass();
-    return constructor
-        .newInstance(declaringClass,
-            MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
-                | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC)
+    return constructor.newInstance(declaringClass,
+            MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC)
         .unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);
   }
 
   /**
    * Backport of java.lang.reflect.Method#isDefault()
    */
-  private boolean isDefaultMethod(Method method) {
+  private boolean isDefaultMethod(Method method) {    // 接口里面的方法且是public，不是abstract，以及static 接口默认方法
     return (method.getModifiers()
         & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) == Modifier.PUBLIC
         && method.getDeclaringClass().isInterface();

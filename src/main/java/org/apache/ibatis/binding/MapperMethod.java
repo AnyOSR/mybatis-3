@@ -198,6 +198,7 @@ public class MapperMethod {
 
     private static final long serialVersionUID = -2212268410512043556L;
 
+    // 如果没有包含，则抛异常，否则返回value
     @Override
     public V get(Object key) {
       if (!super.containsKey(key)) {
@@ -205,9 +206,9 @@ public class MapperMethod {
       }
       return super.get(key);
     }
-
   }
 
+  // 一系列检查 以及找到name和type
   public static class SqlCommand {
 
     private final String name;
@@ -216,15 +217,13 @@ public class MapperMethod {
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
-      MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
-          configuration);
-      if (ms == null) {
+      MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass, configuration);
+      if (ms == null) {  // 如果没有找到，查看是否flush
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
           type = SqlCommandType.FLUSH;
         } else {
-          throw new BindingException("Invalid bound statement (not found): "
-              + mapperInterface.getName() + "." + methodName);
+          throw new BindingException("Invalid bound statement (not found): " + mapperInterface.getName() + "." + methodName);
         }
       } else {
         name = ms.getId();
@@ -243,18 +242,17 @@ public class MapperMethod {
       return type;
     }
 
-    private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
-        Class<?> declaringClass, Configuration configuration) {
+    private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName, Class<?> declaringClass, Configuration configuration) {
       String statementId = mapperInterface.getName() + "." + methodName;
+      //如果已经存在
       if (configuration.hasStatement(statementId)) {
         return configuration.getMappedStatement(statementId);
-      } else if (mapperInterface.equals(declaringClass)) {
+      } else if (mapperInterface.equals(declaringClass)) {   // 如果声明该方法的接口就是当前接口 无需继续查找
         return null;
       }
-      for (Class<?> superInterface : mapperInterface.getInterfaces()) {
+      for (Class<?> superInterface : mapperInterface.getInterfaces()) {  // 则在父接口查找
         if (declaringClass.isAssignableFrom(superInterface)) {
-          MappedStatement ms = resolveMappedStatement(superInterface, methodName,
-              declaringClass, configuration);
+          MappedStatement ms = resolveMappedStatement(superInterface, methodName, declaringClass, configuration);
           if (ms != null) {
             return ms;
           }
@@ -264,6 +262,7 @@ public class MapperMethod {
     }
   }
 
+  // 解析返回类型以及入参类型
   public static class MethodSignature {
 
     private final boolean returnsMany;
@@ -339,6 +338,7 @@ public class MapperMethod {
       return returnsCursor;
     }
 
+    // 获取唯一一个paramType入参类型的index
     private Integer getUniqueParamIndex(Method method, Class<?> paramType) {
       Integer index = null;
       final Class<?>[] argTypes = method.getParameterTypes();
