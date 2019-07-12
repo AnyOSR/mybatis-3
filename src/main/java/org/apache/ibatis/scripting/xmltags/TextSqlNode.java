@@ -37,7 +37,8 @@ public class TextSqlNode implements SqlNode {
     this.text = text;
     this.injectionFilter = injectionFilter;
   }
-  
+
+  // 如果出现过${}，则为dynamic
   public boolean isDynamic() {
     DynamicCheckerTokenParser checker = new DynamicCheckerTokenParser();
     GenericTokenParser parser = createParser(checker);
@@ -66,17 +67,18 @@ public class TextSqlNode implements SqlNode {
       this.injectionFilter = injectionFilter;
     }
 
+    //context是待解析的内容
     @Override
     public String handleToken(String content) {
-      Object parameter = context.getBindings().get("_parameter");
+      Object parameter = context.getBindings().get("_parameter");            // 获取创建context时的第二个入参
       if (parameter == null) {
         context.getBindings().put("value", null);
-      } else if (SimpleTypeRegistry.isSimpleType(parameter.getClass())) {
+      } else if (SimpleTypeRegistry.isSimpleType(parameter.getClass())) {    // 如果参数为简单类型，直接put
         context.getBindings().put("value", parameter);
       }
-      Object value = OgnlCache.getValue(content, context.getBindings());
+      Object value = OgnlCache.getValue(content, context.getBindings());     // 计算表达式的值
       String srtValue = (value == null ? "" : String.valueOf(value)); // issue #274 return "" instead of "null"
-      checkInjection(srtValue);
+      checkInjection(srtValue);                                              // 是否被过滤掉
       return srtValue;
     }
 
@@ -86,7 +88,8 @@ public class TextSqlNode implements SqlNode {
       }
     }
   }
-  
+
+  //只要调用，就为dynamic
   private static class DynamicCheckerTokenParser implements TokenHandler {
 
     private boolean isDynamic;

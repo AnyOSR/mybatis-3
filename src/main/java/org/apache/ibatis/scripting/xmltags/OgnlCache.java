@@ -40,8 +40,8 @@ public final class OgnlCache {
 
   public static Object getValue(String expression, Object root) {
     try {
-      Map<Object, OgnlClassResolver> context = Ognl.createDefaultContext(root, new OgnlClassResolver());
-      return Ognl.getValue(parseExpression(expression), context, root);
+      Map<Object, OgnlClassResolver> context = Ognl.createDefaultContext(root, new OgnlClassResolver());    // 返回一个Ognl上下文，根元素为root
+      return Ognl.getValue(parseExpression(expression), context, root);                                     // 缓存表达式的解析结果，并返回表达式的值
     } catch (OgnlException e) {
       throw new BuilderException("Error evaluating expression '" + expression + "'. Cause: " + e, e);
     }

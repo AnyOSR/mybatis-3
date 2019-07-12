@@ -33,23 +33,25 @@ public class DynamicContext {
 
   public static final String PARAMETER_OBJECT_KEY = "_parameter";
   public static final String DATABASE_ID_KEY = "_databaseId";
-
   static {
     OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
   }
 
+  //参数容器 含有一个map,如果参数是一个bean，则内部还会有MetaObject
   private final ContextMap bindings;
   private final StringBuilder sqlBuilder = new StringBuilder();
   private int uniqueNumber = 0;
 
+  // 如果参数类型是bean，则会创建一个ContextMap.parameterMetaObject
   public DynamicContext(Configuration configuration, Object parameterObject) {
+    // 如果参数类型不是map
     if (parameterObject != null && !(parameterObject instanceof Map)) {
       MetaObject metaObject = configuration.newMetaObject(parameterObject);
       bindings = new ContextMap(metaObject);
     } else {
       bindings = new ContextMap(null);
     }
-    bindings.put(PARAMETER_OBJECT_KEY, parameterObject);
+    bindings.put(PARAMETER_OBJECT_KEY, parameterObject);    // 将真实的入参放入PARAMETER_OBJECT_KEY
     bindings.put(DATABASE_ID_KEY, configuration.getDatabaseId());
   }
 
@@ -74,6 +76,8 @@ public class DynamicContext {
     return uniqueNumber++;
   }
 
+
+  // 继承了map，首先从map中获取，否则从parameterMetaObject中获取
   static class ContextMap extends HashMap<String, Object> {
     private static final long serialVersionUID = 2977601501966151582L;
 
@@ -100,9 +104,10 @@ public class DynamicContext {
 
   static class ContextAccessor implements PropertyAccessor {
 
+    // 从target中获取，只获取设置过的值
+    // 否则从key(PARAMETER_OBJECT_KEY)对应的value(Map)中获取
     @Override
-    public Object getProperty(Map context, Object target, Object name)
-        throws OgnlException {
+    public Object getProperty(Map context, Object target, Object name) throws OgnlException {
       Map map = (Map) target;
 
       Object result = map.get(name);
@@ -118,9 +123,9 @@ public class DynamicContext {
       return null;
     }
 
+    // 直接设置
     @Override
-    public void setProperty(Map context, Object target, Object name, Object value)
-        throws OgnlException {
+    public void setProperty(Map context, Object target, Object name, Object value) throws OgnlException {
       Map<Object, Object> map = (Map<Object, Object>) target;
       map.put(name, value);
     }
