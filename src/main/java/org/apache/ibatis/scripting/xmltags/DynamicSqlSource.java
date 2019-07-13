@@ -42,9 +42,9 @@ public class DynamicSqlSource implements SqlSource {
     rootSqlNode.apply(context);
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
-    SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
+    SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());   // DynamicSqlSource会传入入参  RawSqlSource不会
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
-    for (Map.Entry<String, Object> entry : context.getBindings().entrySet()) {
+    for (Map.Entry<String, Object> entry : context.getBindings().entrySet()) {   // DynamicSqlSource会向BoundSql里面注入context里面的参数
       boundSql.setAdditionalParameter(entry.getKey(), entry.getValue());
     }
     return boundSql;
