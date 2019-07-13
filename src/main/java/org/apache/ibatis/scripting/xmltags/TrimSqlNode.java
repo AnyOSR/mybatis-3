@@ -80,9 +80,10 @@ public class TrimSqlNode implements SqlNode {
       this.delegate = delegate;
       this.prefixApplied = false;
       this.suffixApplied = false;
-      this.sqlBuffer = new StringBuilder();
+      this.sqlBuffer = new StringBuilder();  // 临时buffer
     }
 
+    //移除suffixesToOverride和prefixesToOverride，添加prefix和suffix(可能的话)
     public void applyAll() {
       sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
       String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
@@ -90,7 +91,7 @@ public class TrimSqlNode implements SqlNode {
         applyPrefix(sqlBuffer, trimmedUppercaseSql);
         applySuffix(sqlBuffer, trimmedUppercaseSql);
       }
-      delegate.appendSql(sqlBuffer.toString());
+      delegate.appendSql(sqlBuffer.toString());   // 将临时buffer的内容append到delegate中
     }
 
     @Override
@@ -118,13 +119,14 @@ public class TrimSqlNode implements SqlNode {
       return delegate.getSql();
     }
 
+    // 将trimmedUppercaseSql中的prefixesToOverride去掉，加上prefix
     private void applyPrefix(StringBuilder sql, String trimmedUppercaseSql) {
       if (!prefixApplied) {
         prefixApplied = true;
         if (prefixesToOverride != null) {
           for (String toRemove : prefixesToOverride) {
             if (trimmedUppercaseSql.startsWith(toRemove)) {
-              sql.delete(0, toRemove.trim().length());
+              sql.delete(0, toRemove.trim().length());      // delete一次，然后跳出循环
               break;
             }
           }
@@ -136,20 +138,22 @@ public class TrimSqlNode implements SqlNode {
       }
     }
 
+    // 将trimmedUppercaseSql的suffixesToOverride去掉，加上suffix
+    // sql.toString()==trimmedUppercaseSql?
     private void applySuffix(StringBuilder sql, String trimmedUppercaseSql) {
-      if (!suffixApplied) {
+      if (!suffixApplied) {   // 如果还没有suffix apply过
         suffixApplied = true;
         if (suffixesToOverride != null) {
           for (String toRemove : suffixesToOverride) {
-            if (trimmedUppercaseSql.endsWith(toRemove) || trimmedUppercaseSql.endsWith(toRemove.trim())) {
+            if (trimmedUppercaseSql.endsWith(toRemove) || trimmedUppercaseSql.endsWith(toRemove.trim())) {  // 如果以toRemove结尾
               int start = sql.length() - toRemove.trim().length();
               int end = sql.length();
-              sql.delete(start, end);
-              break;
+              sql.delete(start, end);    //移除掉这个toRemove
+              break;                     // break 则只会delete一次
             }
           }
         }
-        if (suffix != null) {
+        if (suffix != null) { // 如果suffix不为null，append上这个suffix
           sql.append(" ");
           sql.append(suffix);
         }
