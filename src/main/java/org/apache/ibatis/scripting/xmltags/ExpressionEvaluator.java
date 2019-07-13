@@ -29,11 +29,11 @@ import org.apache.ibatis.builder.BuilderException;
 public class ExpressionEvaluator {
 
   public boolean evaluateBoolean(String expression, Object parameterObject) {
-    Object value = OgnlCache.getValue(expression, parameterObject);
-    if (value instanceof Boolean) {
+    Object value = OgnlCache.getValue(expression, parameterObject);       //计算expression的值
+    if (value instanceof Boolean) {   // 如果是boolean，直接返回
       return (Boolean) value;
     }
-    if (value instanceof Number) {
+    if (value instanceof Number) {   // 如果是数值类型
       return new BigDecimal(String.valueOf(value)).compareTo(BigDecimal.ZERO) != 0;
     }
     return value != null;
@@ -44,10 +44,10 @@ public class ExpressionEvaluator {
     if (value == null) {
       throw new BuilderException("The expression '" + expression + "' evaluated to a null value.");
     }
-    if (value instanceof Iterable) {
+    if (value instanceof Iterable) {   //如果是Iterable，直接返回
       return (Iterable<?>) value;
     }
-    if (value.getClass().isArray()) {
+    if (value.getClass().isArray()) {   // 如果是数组，替换成list(iterable)
         // the array may be primitive, so Arrays.asList() may throw
         // a ClassCastException (issue 209).  Do the work manually
         // Curse primitives! :) (JGB)
@@ -59,8 +59,8 @@ public class ExpressionEvaluator {
         }
         return answer;
     }
-    if (value instanceof Map) {
-      return ((Map) value).entrySet();
+    if (value instanceof Map) {         //如果是map
+      return ((Map) value).entrySet();  //返回一个iterable
     }
     throw new BuilderException("Error evaluating expression '" + expression + "'.  Return value (" + value + ") was not iterable.");
   }

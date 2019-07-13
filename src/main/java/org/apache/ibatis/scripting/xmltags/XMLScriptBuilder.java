@@ -74,6 +74,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     return sqlSource;
   }
 
+  // 解析出node的所有SQLNode
   protected MixedSqlNode parseDynamicTags(XNode node) {
     List<SqlNode> contents = new ArrayList<SqlNode>();
     NodeList children = node.getNode().getChildNodes();
@@ -101,6 +102,9 @@ public class XMLScriptBuilder extends BaseBuilder {
     return new MixedSqlNode(contents);
   }
 
+  //handler是用来产生SQLNode，并放入context
+  //其中不同类型的SQLNode可以根据不同的规则产生一些sql语句，放入context
+  //将这些所有的产生的sql合在一起，就是SQLSource
   private interface NodeHandler {
     void handleNode(XNode nodeToHandle, List<SqlNode> targetContents);
   }
@@ -112,8 +116,8 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
-      final String name = nodeToHandle.getStringAttribute("name");
-      final String expression = nodeToHandle.getStringAttribute("value");
+      final String name = nodeToHandle.getStringAttribute("name");                  //获取name
+      final String expression = nodeToHandle.getStringAttribute("value");           //获取表达式的值
       final VarDeclSqlNode node = new VarDeclSqlNode(name, expression);
       targetContents.add(node);
     }
@@ -126,11 +130,11 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
-      MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+      MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);                         //解析trim标签
       String prefix = nodeToHandle.getStringAttribute("prefix");
       String prefixOverrides = nodeToHandle.getStringAttribute("prefixOverrides");
       String suffix = nodeToHandle.getStringAttribute("suffix");
-      String suffixOverrides = nodeToHandle.getStringAttribute("suffixOverrides");
+      String suffixOverrides = nodeToHandle.getStringAttribute("suffixOverrides");   //获取配置的属性
       TrimSqlNode trim = new TrimSqlNode(configuration, mixedSqlNode, prefix, prefixOverrides, suffix, suffixOverrides);
       targetContents.add(trim);
     }
