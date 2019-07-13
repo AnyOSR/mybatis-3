@@ -179,7 +179,7 @@ public class XMLScriptBuilder extends BaseBuilder {
       String index = nodeToHandle.getStringAttribute("index");
       String open = nodeToHandle.getStringAttribute("open");
       String close = nodeToHandle.getStringAttribute("close");
-      String separator = nodeToHandle.getStringAttribute("separator");
+      String separator = nodeToHandle.getStringAttribute("separator");   // 解析配置的属性值
       ForEachSqlNode forEachSqlNode = new ForEachSqlNode(configuration, mixedSqlNode, collection, index, item, open, close, separator);
       targetContents.add(forEachSqlNode);
     }
@@ -199,7 +199,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
   }
 
-  private class OtherwiseHandler implements NodeHandler {
+  private class OtherwiseHandler implements NodeHandler {// 空格子，起到了过渡作用 语义明确
     public OtherwiseHandler() {
       // Prevent Synthetic Access
     }
@@ -226,6 +226,7 @@ public class XMLScriptBuilder extends BaseBuilder {
       targetContents.add(chooseSqlNode);
     }
 
+    //解析node，分拆子节点
     private void handleWhenOtherwiseNodes(XNode chooseSqlNode, List<SqlNode> ifSqlNodes, List<SqlNode> defaultSqlNodes) {
       List<XNode> children = chooseSqlNode.getChildren();
       for (XNode child : children) {
@@ -239,6 +240,7 @@ public class XMLScriptBuilder extends BaseBuilder {
       }
     }
 
+    //只能有一个otherwise
     private SqlNode getDefaultSqlNode(List<SqlNode> defaultSqlNodes) {
       SqlNode defaultSqlNode = null;
       if (defaultSqlNodes.size() == 1) {

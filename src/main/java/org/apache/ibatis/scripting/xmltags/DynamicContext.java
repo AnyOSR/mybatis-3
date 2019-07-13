@@ -63,6 +63,7 @@ public class DynamicContext {
     bindings.put(name, value);
   }
 
+  // 这个什么时候被调用？
   public void appendSql(String sql) {
     sqlBuilder.append(sql);
     sqlBuilder.append(" ");

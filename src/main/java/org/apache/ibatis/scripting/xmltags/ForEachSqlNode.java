@@ -33,8 +33,8 @@ public class ForEachSqlNode implements SqlNode {
   private final String open;
   private final String close;
   private final String separator;
-  private final String item;
-  private final String index;
+  private final String item;       // 配置的item的value
+  private final String index;      // 配置的index的value
   private final Configuration configuration;
 
   public ForEachSqlNode(Configuration configuration, SqlNode contents, String collectionExpression, String index, String item, String open, String close, String separator) {
@@ -51,15 +51,16 @@ public class ForEachSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
-    Map<String, Object> bindings = context.getBindings();
-    final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings);
+    Map<String, Object> bindings = context.getBindings();          // 获取参数
+    final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings);   // 获取实际的iterable (根据表达式获取入参里面的iterable)
     if (!iterable.iterator().hasNext()) {
       return true;
     }
     boolean first = true;
-    applyOpen(context);
+    applyOpen(context);                           // apply open
     int i = 0;
-    for (Object o : iterable) {
+
+    for (Object o : iterable) {                   // 遍历iterable(入参)
       DynamicContext oldContext = context;
       if (first || separator == null) {
         context = new PrefixedContext(context, "");
@@ -68,15 +69,16 @@ public class ForEachSqlNode implements SqlNode {
       }
       int uniqueNumber = context.getUniqueNumber();
       // Issue #709 
-      if (o instanceof Map.Entry) {
+      if (o instanceof Map.Entry) {                // 如果入参是map
         @SuppressWarnings("unchecked") 
         Map.Entry<Object, Object> mapEntry = (Map.Entry<Object, Object>) o;
-        applyIndex(context, mapEntry.getKey(), uniqueNumber);
-        applyItem(context, mapEntry.getValue(), uniqueNumber);
+        applyIndex(context, mapEntry.getKey(), uniqueNumber);          // 将入参map的key放入context
+        applyItem(context, mapEntry.getValue(), uniqueNumber);         // 将入参map的value放入context
       } else {
-        applyIndex(context, i, uniqueNumber);
-        applyItem(context, o, uniqueNumber);
+        applyIndex(context, i, uniqueNumber);    //直接放入index信息
+        applyItem(context, o, uniqueNumber);     //放入index对应的value信息
       }
+      // 此次循环中，可以直接取到当前index对应的value
       contents.apply(new FilteredDynamicContext(configuration, context, index, item, uniqueNumber));
       if (first) {
         first = !((PrefixedContext) context).isPrefixApplied();
@@ -84,23 +86,25 @@ public class ForEachSqlNode implements SqlNode {
       context = oldContext;
       i++;
     }
-    applyClose(context);
-    context.getBindings().remove(item);
-    context.getBindings().remove(index);
+    applyClose(context);                     // append close
+    context.getBindings().remove(item);      // 移除掉item对应的值
+    context.getBindings().remove(index);     // 移除掉index对应的值
     return true;
   }
 
+  //将index相关信息放入context
   private void applyIndex(DynamicContext context, Object o, int i) {
     if (index != null) {
-      context.bind(index, o);
-      context.bind(itemizeItem(index, i), o);
+      context.bind(index, o);                    // 将index---o 放入context         //这个有啥用？ 并且这个index是个final
+      context.bind(itemizeItem(index, i), o);    // ITEM_PREFIX_index_i---o context
     }
   }
 
+  //将item相关信息放入context
   private void applyItem(DynamicContext context, Object o, int i) {
     if (item != null) {
-      context.bind(item, o);
-      context.bind(itemizeItem(item, i), o);
+      context.bind(item, o);                     // 将item---o 放入context
+      context.bind(itemizeItem(item, i), o);     // ITEM_PREFIX_item_i---o context
     }
   }
 
@@ -116,6 +120,7 @@ public class ForEachSqlNode implements SqlNode {
     }
   }
 
+  // ITEM_PREFIX item_i
   private static String itemizeItem(String item, int i) {
     return new StringBuilder(ITEM_PREFIX).append(item).append("_").append(i).toString();
   }
@@ -129,9 +134,9 @@ public class ForEachSqlNode implements SqlNode {
     public FilteredDynamicContext(Configuration configuration,DynamicContext delegate, String itemIndex, String item, int i) {
       super(configuration, null);
       this.delegate = delegate;
-      this.index = i;
-      this.itemIndex = itemIndex;
-      this.item = item;
+      this.index = i;                 // 解析顺序下表
+      this.itemIndex = itemIndex;     // 入参下表索引
+      this.item = item;               // 入参索引
     }
 
     @Override
@@ -149,17 +154,21 @@ public class ForEachSqlNode implements SqlNode {
       return delegate.getSql();
     }
 
+    // 最终的sql是存储在context里面的
     @Override
     public void appendSql(String sql) {
       GenericTokenParser parser = new GenericTokenParser("#{", "}", new TokenHandler() {
+
         @Override
         public String handleToken(String content) {
-          String newContent = content.replaceFirst("^\\s*" + item + "(?![^.,:\\s])", itemizeItem(item, index));
-          if (itemIndex != null && newContent.equals(content)) {
+          String newContent = content.replaceFirst("^\\s*" + item + "(?![^.,:\\s])", itemizeItem(item, index));  //空格 item 替换为context里面的参数key
+          //如果没有进行替换
+          if (itemIndex != null && newContent.equals(content)) {                                                        //空格 item 替换为context里面的参数key
             newContent = content.replaceFirst("^\\s*" + itemIndex + "(?![^.,:\\s])", itemizeItem(itemIndex, index));
           }
           return new StringBuilder("#{").append(newContent).append("}").toString();
         }
+        // 对文本里面的item文本进行替换，换成context里面的key
       });
 
       delegate.appendSql(parser.parse(sql));
@@ -201,7 +210,7 @@ public class ForEachSqlNode implements SqlNode {
 
     @Override
     public void appendSql(String sql) {
-      if (!prefixApplied && sql != null && sql.trim().length() > 0) {
+      if (!prefixApplied && sql != null && sql.trim().length() > 0) {  // 如果还能append 则append prefix
         delegate.appendSql(prefix);
         prefixApplied = true;
       }

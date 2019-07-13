@@ -33,10 +33,10 @@ public class ChooseSqlNode implements SqlNode {
   public boolean apply(DynamicContext context) {
     for (SqlNode sqlNode : ifSqlNodes) {
       if (sqlNode.apply(context)) {
-        return true;
+        return true;    // 如果有when子节点，则直接返回
       }
     }
-    if (defaultSqlNode != null) {
+    if (defaultSqlNode != null) {  // 否则，otherwise节点
       defaultSqlNode.apply(context);
       return true;
     }
