@@ -62,6 +62,7 @@ public class SqlSourceBuilder extends BaseBuilder {
       return parameterMappings;
     }
 
+    // 主要是构建parameterMappings，然后将变量替换为问号
     @Override
     public String handleToken(String content) {
       parameterMappings.add(buildParameterMapping(content));
@@ -69,7 +70,7 @@ public class SqlSourceBuilder extends BaseBuilder {
     }
 
     private ParameterMapping buildParameterMapping(String content) {
-      Map<String, String> propertiesMap = parseParameterMapping(content);
+      Map<String, String> propertiesMap = parseParameterMapping(content);  // 解析content中的内容 expression property jdbcType k-v
       String property = propertiesMap.get("property");
       Class<?> propertyType;
       if (metaParameters.hasGetter(property)) { // issue #448 get type from additional params
