@@ -96,7 +96,6 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   // temporary marking flag that indicate using constructor mapping (use field to reduce memory usage)
   private boolean useConstructorMappings;
-
   private final PrimitiveTypes primitiveTypes;
 
   private static class PendingRelation {
@@ -142,9 +141,10 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final Object parameterObject = parameterHandler.getParameterObject();
     final MetaObject metaParam = configuration.newMetaObject(parameterObject);
     final List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+
     for (int i = 0; i < parameterMappings.size(); i++) {
       final ParameterMapping parameterMapping = parameterMappings.get(i);
-      if (parameterMapping.getMode() == ParameterMode.OUT || parameterMapping.getMode() == ParameterMode.INOUT) {
+      if (parameterMapping.getMode() == ParameterMode.OUT || parameterMapping.getMode() == ParameterMode.INOUT) {   // 如果是out
         if (ResultSet.class.equals(parameterMapping.getJavaType())) {
           handleRefCursorOutputParameter((ResultSet) cs.getObject(i + 1), parameterMapping, metaParam);
         } else {
@@ -164,7 +164,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       final ResultMap resultMap = configuration.getResultMap(resultMapId);
       final ResultSetWrapper rsw = new ResultSetWrapper(rs, configuration);
       if (this.resultHandler == null) {
-        final DefaultResultHandler resultHandler = new DefaultResultHandler(objectFactory);
+        final DefaultResultHandler resultHandler = new DefaultResultHandler(objectFactory);    // DefaultResultHandler
         handleRowValues(rsw, resultMap, resultHandler, new RowBounds(), null);
         metaParam.setValue(parameterMapping.getProperty(), resultHandler.getResultList());
       } else {
@@ -186,11 +186,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     final List<Object> multipleResults = new ArrayList<Object>();
 
     int resultSetCount = 0;
-    ResultSetWrapper rsw = getFirstResultSet(stmt);
+    ResultSetWrapper rsw = getFirstResultSet(stmt);      // 获取结果集
 
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
     int resultMapCount = resultMaps.size();
-    validateResultMapsCount(rsw, resultMapCount);
+    validateResultMapsCount(rsw, resultMapCount);        // 校验参数合法性
     while (rsw != null && resultMapCount > resultSetCount) {
       ResultMap resultMap = resultMaps.get(resultSetCount);
       handleResultSet(rsw, resultMap, multipleResults, null);
@@ -199,7 +199,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       resultSetCount++;
     }
 
-    String[] resultSets = mappedStatement.getResultSets();
+    String[] resultSets = mappedStatement.getResultSets();    //resultSets?
     if (resultSets != null) {
       while (rsw != null && resultSetCount < resultSets.length) {
         ResultMapping parentMapping = nextResultMaps.get(resultSets[resultSetCount]);
@@ -235,12 +235,14 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     return new DefaultCursor<E>(this, resultMap, rsw, rowBounds);
   }
 
+  // 获取resultSet
   private ResultSetWrapper getFirstResultSet(Statement stmt) throws SQLException {
     ResultSet rs = stmt.getResultSet();
+    // 如果取到的值为null
     while (rs == null) {
       // move forward to get the first resultset in case the driver
       // doesn't return the resultset as the first result (HSQLDB 2.1)
-      if (stmt.getMoreResults()) {
+      if (stmt.getMoreResults()) {     // 如果rs为null，则
         rs = stmt.getResultSet();
       } else {
         if (stmt.getUpdateCount() == -1) {
@@ -252,12 +254,13 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     return rs != null ? new ResultSetWrapper(rs, configuration) : null;
   }
 
+  // 获取下一个resultSet
   private ResultSetWrapper getNextResultSet(Statement stmt) throws SQLException {
     // Making this method tolerant of bad JDBC drivers
     try {
       if (stmt.getConnection().getMetaData().supportsMultipleResultSets()) {
         // Crazy Standard JDBC way of determining if there are more results
-        if (!(!stmt.getMoreResults() && stmt.getUpdateCount() == -1)) {
+        if (!(!stmt.getMoreResults() && stmt.getUpdateCount() == -1)) {  // 如果还有resultSet
           ResultSet rs = stmt.getResultSet();
           if (rs == null) {
             return getNextResultSet(stmt);
@@ -377,12 +380,12 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private void skipRows(ResultSet rs, RowBounds rowBounds) throws SQLException {
     if (rs.getType() != ResultSet.TYPE_FORWARD_ONLY) {
-      if (rowBounds.getOffset() != RowBounds.NO_ROW_OFFSET) {
-        rs.absolute(rowBounds.getOffset());
+      if (rowBounds.getOffset() != RowBounds.NO_ROW_OFFSET) {   // 不为TYPE_FORWARD_ONLY(可以回退遍历) 且rowBounds存在有效值
+        rs.absolute(rowBounds.getOffset());                     // 调用absolute，应该是可以回退
       }
-    } else {
+    } else {                                                 // 如果是TYPE_FORWARD_ONLY 跳过rowBounds数据
       for (int i = 0; i < rowBounds.getOffset(); i++) {
-        rs.next();
+        rs.next();                                            // next 应该是不可以回退
       }
     }
   }

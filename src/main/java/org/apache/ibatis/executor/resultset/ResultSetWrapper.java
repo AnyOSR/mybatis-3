@@ -49,6 +49,7 @@ public class ResultSetWrapper {
   private final Map<String, List<String>> mappedColumnNamesMap = new HashMap<String, List<String>>();
   private final Map<String, List<String>> unMappedColumnNamesMap = new HashMap<String, List<String>>();
 
+  // 填充数据结构
   public ResultSetWrapper(ResultSet rs, Configuration configuration) throws SQLException {
     super();
     this.typeHandlerRegistry = configuration.getTypeHandlerRegistry();
@@ -74,6 +75,7 @@ public class ResultSetWrapper {
     return Collections.unmodifiableList(classNames);
   }
 
+  // 根据columnName来获取jdbcType
   public JdbcType getJdbcType(String columnName) {
     for (int i = 0 ; i < columnNames.size(); i++) {
       if (columnNames.get(i).equalsIgnoreCase(columnName)) {
@@ -92,6 +94,7 @@ public class ResultSetWrapper {
    * @param columnName
    * @return
    */
+  // 获取TypeHandler的实例
   public TypeHandler<?> getTypeHandler(Class<?> propertyType, String columnName) {
     TypeHandler<?> handler = null;
     Map<Class<?>, TypeHandler<?>> columnHandlers = typeHandlerMap.get(columnName);
@@ -125,6 +128,7 @@ public class ResultSetWrapper {
     return handler;
   }
 
+  // 加载className对应的class
   private Class<?> resolveClass(String className) {
     try {
       // #699 className could be null
@@ -144,16 +148,19 @@ public class ResultSetWrapper {
     final Set<String> mappedColumns = prependPrefixes(resultMap.getMappedColumns(), upperColumnPrefix);
     for (String columnName : columnNames) {
       final String upperColumnName = columnName.toUpperCase(Locale.ENGLISH);
+      // 如果配置里面含有返回结果里面的column
       if (mappedColumns.contains(upperColumnName)) {
         mappedColumnNames.add(upperColumnName);
       } else {
         unmappedColumnNames.add(columnName);
       }
     }
+    //resultMapId:columnPrefix
     mappedColumnNamesMap.put(getMapKey(resultMap, columnPrefix), mappedColumnNames);
     unMappedColumnNamesMap.put(getMapKey(resultMap, columnPrefix), unmappedColumnNames);
   }
 
+  // 这个columnPrefix是个啥？
   public List<String> getMappedColumnNames(ResultMap resultMap, String columnPrefix) throws SQLException {
     List<String> mappedColumnNames = mappedColumnNamesMap.get(getMapKey(resultMap, columnPrefix));
     if (mappedColumnNames == null) {
