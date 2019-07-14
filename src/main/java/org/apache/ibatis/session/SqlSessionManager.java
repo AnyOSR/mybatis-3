@@ -34,10 +34,10 @@ import org.apache.ibatis.reflection.ExceptionUtil;
  */
 public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
-  private final SqlSessionFactory sqlSessionFactory;
-  private final SqlSession sqlSessionProxy;
+  private final ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<SqlSession>();    // sqlSession的存放key
+  private final SqlSessionFactory sqlSessionFactory;    // 用来获取实际的sqlSession
 
-  private final ThreadLocal<SqlSession> localSqlSession = new ThreadLocal<SqlSession>();
+  private final SqlSession sqlSessionProxy;
 
   private SqlSessionManager(SqlSessionFactory sqlSessionFactory) {
     this.sqlSessionFactory = sqlSessionFactory;
@@ -344,7 +344,7 @@ public class SqlSessionManager implements SqlSessionFactory, SqlSession {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      final SqlSession sqlSession = SqlSessionManager.this.localSqlSession.get();
+      final SqlSession sqlSession = SqlSessionManager.this.localSqlSession.get();   // 获取sqlSession
       if (sqlSession != null) {
         try {
           return method.invoke(sqlSession, args);

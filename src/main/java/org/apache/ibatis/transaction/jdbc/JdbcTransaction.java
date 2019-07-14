@@ -26,10 +26,10 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionException;
 
 /**
- * {@link Transaction} that makes use of the JDBC commit and rollback facilities directly.
- * It relies on the connection retrieved from the dataSource to manage the scope of the transaction.
+ * {@link Transaction} that makes use of the JDBC commit and rollback facilities directly.             直接利用JDBC来commit或者rollback
+ * It relies on the connection retrieved from the dataSource to manage the scope of the transaction.   依靠从数据库获得的connection来管理事务范围
  * Delays connection retrieval until getConnection() is called.
- * Ignores commit or rollback requests when autocommit is on.
+ * Ignores commit or rollback requests when autocommit is on.                                      autocommit开启的时候，忽略commit和rollback
  *
  * @author Clinton Begin
  *
@@ -65,7 +65,7 @@ public class JdbcTransaction implements Transaction {
 
   @Override
   public void commit() throws SQLException {
-    if (connection != null && !connection.getAutoCommit()) {
+    if (connection != null && !connection.getAutoCommit()) {  // 不是自动提交
       if (log.isDebugEnabled()) {
         log.debug("Committing JDBC Connection [" + connection + "]");
       }
@@ -75,7 +75,7 @@ public class JdbcTransaction implements Transaction {
 
   @Override
   public void rollback() throws SQLException {
-    if (connection != null && !connection.getAutoCommit()) {
+    if (connection != null && !connection.getAutoCommit()) {     // 不是自动提交
       if (log.isDebugEnabled()) {
         log.debug("Rolling back JDBC Connection [" + connection + "]");
       }
@@ -132,6 +132,7 @@ public class JdbcTransaction implements Transaction {
     }
   }
 
+  // 获取连接 设置隔离级别以及是否自动提交
   protected void openConnection() throws SQLException {
     if (log.isDebugEnabled()) {
       log.debug("Opening JDBC Connection");

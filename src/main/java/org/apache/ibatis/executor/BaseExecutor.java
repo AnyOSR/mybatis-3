@@ -56,7 +56,7 @@ public abstract class BaseExecutor implements Executor {
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
   protected PerpetualCache localCache;
-  protected PerpetualCache localOutputParameterCache;
+  protected PerpetualCache localOutputParameterCache;   // outputParameter?
   protected Configuration configuration;
 
   protected int queryStack;
@@ -113,7 +113,7 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
-    clearLocalCache();
+    clearLocalCache();                // update之前clear掉缓存
     return doUpdate(ms, parameter);
   }
 
@@ -197,15 +197,15 @@ public abstract class BaseExecutor implements Executor {
       throw new ExecutorException("Executor was closed.");
     }
     CacheKey cacheKey = new CacheKey();
-    cacheKey.update(ms.getId());
-    cacheKey.update(rowBounds.getOffset());
-    cacheKey.update(rowBounds.getLimit());
-    cacheKey.update(boundSql.getSql());
+    cacheKey.update(ms.getId());                      // id
+    cacheKey.update(rowBounds.getOffset());           // offset
+    cacheKey.update(rowBounds.getLimit());            // limit
+    cacheKey.update(boundSql.getSql());               // sql
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
     // mimic DefaultParameterHandler logic
     for (ParameterMapping parameterMapping : parameterMappings) {
-      if (parameterMapping.getMode() != ParameterMode.OUT) {
+      if (parameterMapping.getMode() != ParameterMode.OUT) {   // 如果不是out
         Object value;
         String propertyName = parameterMapping.getProperty();
         if (boundSql.hasAdditionalParameter(propertyName)) {
@@ -218,12 +218,12 @@ public abstract class BaseExecutor implements Executor {
           MetaObject metaObject = configuration.newMetaObject(parameterObject);
           value = metaObject.getValue(propertyName);
         }
-        cacheKey.update(value);
+        cacheKey.update(value);                                  // 参数
       }
     }
     if (configuration.getEnvironment() != null) {
       // issue #176
-      cacheKey.update(configuration.getEnvironment().getId());
+      cacheKey.update(configuration.getEnvironment().getId());    // environment id
     }
     return cacheKey;
   }
@@ -300,9 +300,11 @@ public abstract class BaseExecutor implements Executor {
     StatementUtil.applyTransactionTimeout(statement, statement.getQueryTimeout(), transaction.getTimeout());
   }
 
+  // 将缓存中的部分参数转移到parameter中
   private void handleLocallyCachedOutputParameters(MappedStatement ms, CacheKey key, Object parameter, BoundSql boundSql) {
+    // 如果是CALLABLE
     if (ms.getStatementType() == StatementType.CALLABLE) {
-      final Object cachedParameter = localOutputParameterCache.getObject(key);
+      final Object cachedParameter = localOutputParameterCache.getObject(key);   // 获取入参
       if (cachedParameter != null && parameter != null) {
         final MetaObject metaCachedParameter = configuration.newMetaObject(cachedParameter);
         final MetaObject metaParameter = configuration.newMetaObject(parameter);
@@ -319,15 +321,15 @@ public abstract class BaseExecutor implements Executor {
 
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
-    localCache.putObject(key, EXECUTION_PLACEHOLDER);
+    localCache.putObject(key, EXECUTION_PLACEHOLDER);               // 缓存标志位
     try {
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
       localCache.removeObject(key);
     }
-    localCache.putObject(key, list);
+    localCache.putObject(key, list);                               // 缓存
     if (ms.getStatementType() == StatementType.CALLABLE) {
-      localOutputParameterCache.putObject(key, parameter);
+      localOutputParameterCache.putObject(key, parameter);         // 如果是CALLABLE ，缓存参数
     }
     return list;
   }
@@ -345,9 +347,9 @@ public abstract class BaseExecutor implements Executor {
   public void setExecutorWrapper(Executor wrapper) {
     this.wrapper = wrapper;
   }
-  
-  private static class DeferredLoad {
 
+
+  private static class DeferredLoad {
     private final MetaObject resultObject;
     private final String property;
     private final Class<?> targetType;
@@ -376,6 +378,7 @@ public abstract class BaseExecutor implements Executor {
       return localCache.getObject(key) != null && localCache.getObject(key) != EXECUTION_PLACEHOLDER;
     }
 
+    // load的时候采取加载
     public void load() {
       @SuppressWarnings( "unchecked" )
       // we suppose we get back a List
@@ -383,7 +386,6 @@ public abstract class BaseExecutor implements Executor {
       Object value = resultExtractor.extractObjectFromList(list, targetType);
       resultObject.setValue(property, value);
     }
-
   }
 
 }

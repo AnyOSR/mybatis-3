@@ -97,8 +97,7 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <K, V> Map<K, V> selectMap(String statement, Object parameter, String mapKey, RowBounds rowBounds) {
     final List<? extends V> list = selectList(statement, parameter, rowBounds);
-    final DefaultMapResultHandler<K, V> mapResultHandler = new DefaultMapResultHandler<K, V>(mapKey,
-        configuration.getObjectFactory(), configuration.getObjectWrapperFactory(), configuration.getReflectorFactory());
+    final DefaultMapResultHandler<K, V> mapResultHandler = new DefaultMapResultHandler<K, V>(mapKey, configuration.getObjectFactory(), configuration.getObjectWrapperFactory(), configuration.getReflectorFactory());
     final DefaultResultContext<V> context = new DefaultResultContext<V>();
     for (V o : list) {
       context.nextResultObject(o);
@@ -269,6 +268,7 @@ public class DefaultSqlSession implements SqlSession {
     }
   }
 
+  // 关闭游标
   private void closeCursors() {
     if (cursorList != null && cursorList.size() != 0) {
       for (Cursor<?> cursor : cursorList) {
@@ -306,6 +306,7 @@ public class DefaultSqlSession implements SqlSession {
     executor.clearLocalCache();
   }
 
+  // 注册游标
   private <T> void registerCursor(Cursor<T> cursor) {
     if (cursorList == null) {
       cursorList = new ArrayList<Cursor<?>>();
@@ -313,30 +314,33 @@ public class DefaultSqlSession implements SqlSession {
     cursorList.add(cursor);
   }
 
+  //不是自动提交且脏了
+  // 强制
   private boolean isCommitOrRollbackRequired(boolean force) {
     return (!autoCommit && dirty) || force;
   }
 
+  //collection list array
+  // 如果都不是，返回自己
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<Object>();
-      map.put("collection", object);
-      if (object instanceof List) {
+      map.put("collection", object);                        // 放入原参数
+      if (object instanceof List) {                         // 放入list
         map.put("list", object);
       }
       return map;
     } else if (object != null && object.getClass().isArray()) {
       StrictMap<Object> map = new StrictMap<Object>();
-      map.put("array", object);
+      map.put("array", object);                             // 放入array
       return map;
     }
     return object;
   }
 
+  // 获取的时候，如果key没有对应的value，则报错
   public static class StrictMap<V> extends HashMap<String, V> {
-
     private static final long serialVersionUID = -5741767162221585340L;
-
     @Override
     public V get(Object key) {
       if (!super.containsKey(key)) {
