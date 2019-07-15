@@ -388,9 +388,10 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
   
   private String processNestedResultMappings(XNode context, List<ResultMapping> resultMappings) throws Exception {
+    // 只有association，collection，case支持nestResultMap
     if ("association".equals(context.getName()) || "collection".equals(context.getName()) || "case".equals(context.getName())) {
-      if (context.getStringAttribute("select") == null) {
-        ResultMap resultMap = resultMapElement(context, resultMappings);
+      if (context.getStringAttribute("select") == null) {     // 如果没有select属性
+        ResultMap resultMap = resultMapElement(context, resultMappings);  // 递归解析resultMap
         return resultMap.getId();
       }
     }

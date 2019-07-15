@@ -188,7 +188,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     int resultSetCount = 0;
     ResultSetWrapper rsw = getFirstResultSet(stmt);      // 获取结果集
 
-    List<ResultMap> resultMaps = mappedStatement.getResultMaps();
+    List<ResultMap> resultMaps = mappedStatement.getResultMaps();   // 获取当前mappedStatement的resultMap
     int resultMapCount = resultMaps.size();
     validateResultMapsCount(rsw, resultMapCount);        // 校验参数合法性
     while (rsw != null && resultMapCount > resultSetCount) {
@@ -374,6 +374,8 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     ((ResultHandler<Object>) resultHandler).handleResult(resultContext);
   }
 
+  //是否需要继续处理
+  // rowBounds
   private boolean shouldProcessMoreRows(ResultContext<?> context, RowBounds rowBounds) throws SQLException {
     return !context.isStopped() && context.getResultCount() < rowBounds.getLimit();
   }
