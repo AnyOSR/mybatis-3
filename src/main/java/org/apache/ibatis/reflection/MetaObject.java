@@ -112,7 +112,7 @@ public class MetaObject {
   }
 
   public Object getValue(String name) {
-    PropertyTokenizer prop = new PropertyTokenizer(name);
+    PropertyTokenizer prop = new PropertyTokenizer(name);     // name[index].children
     // 如果有.
     if (prop.hasNext()) {
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());

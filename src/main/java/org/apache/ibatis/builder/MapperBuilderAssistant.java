@@ -322,7 +322,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
 
     List<ResultMap> resultMaps = new ArrayList<ResultMap>();
     if (resultMap != null) {
-      String[] resultMapNames = resultMap.split(",");
+      String[] resultMapNames = resultMap.split(",");      // 当前method的配置的所有resultMap
       for (String resultMapName : resultMapNames) {
         try {
           resultMaps.add(configuration.getResultMap(resultMapName.trim()));

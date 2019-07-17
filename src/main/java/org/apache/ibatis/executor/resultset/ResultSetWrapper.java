@@ -145,8 +145,8 @@ public class ResultSetWrapper {
     List<String> mappedColumnNames = new ArrayList<String>();
     List<String> unmappedColumnNames = new ArrayList<String>();
     final String upperColumnPrefix = columnPrefix == null ? null : columnPrefix.toUpperCase(Locale.ENGLISH);
-    final Set<String> mappedColumns = prependPrefixes(resultMap.getMappedColumns(), upperColumnPrefix);
-    for (String columnName : columnNames) {
+    final Set<String> mappedColumns = prependPrefixes(resultMap.getMappedColumns(), upperColumnPrefix);  // 获取所有配置的column
+    for (String columnName : columnNames) { // 获取resultSet里所有的column
       final String upperColumnName = columnName.toUpperCase(Locale.ENGLISH);
       // 如果配置里面含有返回结果里面的column
       if (mappedColumns.contains(upperColumnName)) {

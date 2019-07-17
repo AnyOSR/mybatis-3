@@ -135,6 +135,9 @@ public class ResultMap {
         }
       }
 
+      // 如果一个ID属性的都没有，则全部加到idResultMappings中
+      // constructor中的子节点 idArg
+      // 子节点name为id
       if (resultMap.idResultMappings.isEmpty()) {
         resultMap.idResultMappings.addAll(resultMap.resultMappings);
       }

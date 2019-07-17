@@ -120,7 +120,7 @@ public class ResultLoaderMap {
     /**
      * Meta object which sets loaded properties.
      */
-    private transient MetaObject metaResultObject;
+    private transient MetaObject metaResultObject;     // 返回结果
     /**
      * Result loader which loads unread properties.
      */
@@ -136,15 +136,15 @@ public class ResultLoaderMap {
     /**
      * Name of the unread property.
      */
-    private String property;
+    private String property;            // 属性
     /**
      * ID of SQL statement which loads the property.
      */
-    private String mappedStatement;
+    private String mappedStatement;     // mappedStatementId
     /**
      * Parameter of the sql statement.
      */
-    private Serializable mappedParameter;
+    private Serializable mappedParameter;  // 入参
 
     private LoadPair(final String property, MetaObject metaResultObject, ResultLoader resultLoader) {
       this.property = property;

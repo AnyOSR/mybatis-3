@@ -372,7 +372,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     String column = context.getStringAttribute("column");
     String javaType = context.getStringAttribute("javaType");
     String jdbcType = context.getStringAttribute("jdbcType");
-    String nestedSelect = context.getStringAttribute("select");
+    String nestedSelect = context.getStringAttribute("select");       // select和 resultMap不能共存
     String nestedResultMap = context.getStringAttribute("resultMap", processNestedResultMappings(context, Collections.<ResultMapping> emptyList()));
     String notNullColumn = context.getStringAttribute("notNullColumn");
     String columnPrefix = context.getStringAttribute("columnPrefix");
@@ -388,7 +388,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
   
   private String processNestedResultMappings(XNode context, List<ResultMapping> resultMappings) throws Exception {
-    // 只有association，collection，case支持nestResultMap
+    // 只有association，collection，case支持nestResultMap 且不能有select
     if ("association".equals(context.getName()) || "collection".equals(context.getName()) || "case".equals(context.getName())) {
       if (context.getStringAttribute("select") == null) {     // 如果没有select属性
         ResultMap resultMap = resultMapElement(context, resultMappings);  // 递归解析resultMap
