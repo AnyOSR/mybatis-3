@@ -835,17 +835,17 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   //
   // DISCRIMINATOR
   //
-
+  // 返回resultMap.Discriminator对应的最终的ResultMap, 如果不存在，则返回自身
   public ResultMap resolveDiscriminatedResultMap(ResultSet rs, ResultMap resultMap, String columnPrefix) throws SQLException {
     Set<String> pastDiscriminators = new HashSet<String>();
     Discriminator discriminator = resultMap.getDiscriminator();
     while (discriminator != null) {
-      final Object value = getDiscriminatorValue(rs, discriminator, columnPrefix);
-      final String discriminatedMapId = discriminator.getMapIdFor(String.valueOf(value));
-      if (configuration.hasResultMap(discriminatedMapId)) {
+      final Object value = getDiscriminatorValue(rs, discriminator, columnPrefix);              // 获取discriminator对应的返回值
+      final String discriminatedMapId = discriminator.getMapIdFor(String.valueOf(value));       // 获取value对应的resultMap,有可能为null
+      if (configuration.hasResultMap(discriminatedMapId)) {  // 如果存在
         resultMap = configuration.getResultMap(discriminatedMapId);
         Discriminator lastDiscriminator = discriminator;
-        discriminator = resultMap.getDiscriminator();
+        discriminator = resultMap.getDiscriminator();            // 获取嵌套的discriminator
         if (discriminator == lastDiscriminator || !pastDiscriminators.add(discriminatedMapId)) {
           break;
         }
@@ -856,10 +856,11 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     return resultMap;
   }
 
+  // 获取discriminator对应的响应值
   private Object getDiscriminatorValue(ResultSet rs, Discriminator discriminator, String columnPrefix) throws SQLException {
-    final ResultMapping resultMapping = discriminator.getResultMapping();
+    final ResultMapping resultMapping = discriminator.getResultMapping();    // 为了获取column的值
     final TypeHandler<?> typeHandler = resultMapping.getTypeHandler();
-    return typeHandler.getResult(rs, prependPrefix(resultMapping.getColumn(), columnPrefix));
+    return typeHandler.getResult(rs, prependPrefix(resultMapping.getColumn(), columnPrefix));  // 获取结果
   }
 
   private String prependPrefix(String columnName, String prefix) {
@@ -950,7 +951,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     boolean foundValues = false;
     for (ResultMapping resultMapping : resultMap.getPropertyResultMappings()) {
       final String nestedResultMapId = resultMapping.getNestedResultMapId();
-      if (nestedResultMapId != null && resultMapping.getResultSet() == null) {
+      if (nestedResultMapId != null && resultMapping.getResultSet() == null) {  // 如果是一个嵌套的resultMap且没有resultSet属性
         try {
           final String columnPrefix = getColumnPrefix(parentPrefix, resultMapping);
           final ResultMap nestedResultMap = getNestedResultMap(rsw.getResultSet(), nestedResultMapId, columnPrefix);
@@ -1019,6 +1020,8 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     return true;
   }
 
+  // 如果nestedResultMapId含有Discriminator，则返回对应的resultMap
+  // 否则返回nestedResultMapId对应的ResultMap
   private ResultMap getNestedResultMap(ResultSet rs, String nestedResultMapId, String columnPrefix) throws SQLException {
     ResultMap nestedResultMap = configuration.getResultMap(nestedResultMapId);
     return resolveDiscriminatedResultMap(rs, nestedResultMap, columnPrefix);

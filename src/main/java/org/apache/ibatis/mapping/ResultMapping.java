@@ -41,8 +41,8 @@ public class ResultMapping {
   private Set<String> notNullColumns;
   private String columnPrefix;
   private List<ResultFlag> flags;
-  private List<ResultMapping> composites;   // 递归
-  private String resultSet;
+  private List<ResultMapping> composites;   // 复合column,  {,= 分隔
+  private String resultSet;            // 多结果集？
   private String foreignColumn;
   private boolean lazy;
 
