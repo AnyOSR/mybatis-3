@@ -53,6 +53,7 @@ public class SimpleExecutor extends BaseExecutor {
     }
   }
 
+  // statement是在executor里面创建的 层级不同
   @Override
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     Statement stmt = null;
