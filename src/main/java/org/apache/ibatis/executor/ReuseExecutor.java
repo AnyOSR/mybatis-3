@@ -38,6 +38,7 @@ import org.apache.ibatis.transaction.Transaction;
  */
 public class ReuseExecutor extends BaseExecutor {
 
+  // 缓存生成的Statement
   private final Map<String, Statement> statementMap = new HashMap<String, Statement>();
 
   public ReuseExecutor(Configuration configuration, Transaction transaction) {
@@ -87,12 +88,13 @@ public class ReuseExecutor extends BaseExecutor {
     } else {
       Connection connection = getConnection(statementLog);
       stmt = handler.prepare(connection, transaction.getTimeout());
-      putStatement(sql, stmt);
+      putStatement(sql, stmt);            // 放入缓存
     }
     handler.parameterize(stmt);
     return stmt;
   }
 
+  //判断当前的sql对应的statement是否存在
   private boolean hasStatementFor(String sql) {
     try {
       return statementMap.keySet().contains(sql) && !statementMap.get(sql).getConnection().isClosed();

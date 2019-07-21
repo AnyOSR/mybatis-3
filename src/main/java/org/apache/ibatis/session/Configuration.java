@@ -554,6 +554,7 @@ public class Configuration {
     return resultSetHandler;
   }
 
+  // 先是interceptor，最后才是RoutingStatementHandler
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
@@ -564,6 +565,8 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  // 创建一个新的executor
+  // 执行器类型
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;

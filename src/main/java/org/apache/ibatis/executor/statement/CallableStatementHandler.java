@@ -43,6 +43,7 @@ public class CallableStatementHandler extends BaseStatementHandler {
     super(executor, mappedStatement, parameter, rowBounds, resultHandler, boundSql);
   }
 
+  // 存储过程
   @Override
   public int update(Statement statement) throws SQLException {
     CallableStatement cs = (CallableStatement) statement;

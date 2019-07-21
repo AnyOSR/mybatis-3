@@ -36,7 +36,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
- * @author Jeff Butler 
+ * @author Jeff Butler   批量执行
  */
 public class BatchExecutor extends BaseExecutor {
 
@@ -115,9 +115,9 @@ public class BatchExecutor extends BaseExecutor {
         return Collections.emptyList();
       }
       for (int i = 0, n = statementList.size(); i < n; i++) {
-        Statement stmt = statementList.get(i);
+        Statement stmt = statementList.get(i);               // 获取当前Statement
         applyTransactionTimeout(stmt);
-        BatchResult batchResult = batchResultList.get(i);
+        BatchResult batchResult = batchResultList.get(i);    // 获取对应的BatchResult
         try {
           batchResult.setUpdateCounts(stmt.executeBatch());
           MappedStatement ms = batchResult.getMappedStatement();

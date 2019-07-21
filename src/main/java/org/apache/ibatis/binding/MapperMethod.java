@@ -50,6 +50,7 @@ public class MapperMethod {
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  // args 输入参数
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -265,11 +266,12 @@ public class MapperMethod {
   // 解析返回类型以及入参类型
   public static class MethodSignature {
 
-    private final boolean returnsMany;
-    private final boolean returnsMap;
-    private final boolean returnsVoid;
-    private final boolean returnsCursor;
-    private final Class<?> returnType;
+    private final boolean returnsMany;       // collection或者数组
+    private final boolean returnsMap;        // map
+    private final boolean returnsVoid;       // void
+    private final boolean returnsCursor;     // Cursor
+
+    private final Class<?> returnType;      // 返回类型
     private final String mapKey;
     private final Integer resultHandlerIndex;
     private final Integer rowBoundsIndex;
@@ -289,9 +291,9 @@ public class MapperMethod {
       this.returnsCursor = Cursor.class.equals(this.returnType);
       this.mapKey = getMapKey(method);
       this.returnsMap = this.mapKey != null;
-      this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
-      this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
-      this.paramNameResolver = new ParamNameResolver(configuration, method);
+      this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);             // 获取唯一一个RowBounds参数类型的index
+      this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);     // 获取唯一一个ResultHandler类型参数的index
+      this.paramNameResolver = new ParamNameResolver(configuration, method);          // 解析参数
     }
 
     public Object convertArgsToSqlCommandParam(Object[] args) {
@@ -354,6 +356,7 @@ public class MapperMethod {
       return index;
     }
 
+    // 如果返回类型为map 且存在MapKey注解
     private String getMapKey(Method method) {
       String mapKey = null;
       if (Map.class.isAssignableFrom(method.getReturnType())) {

@@ -71,6 +71,7 @@ public class DefaultSqlSession implements SqlSession {
     return this.<T>selectOne(statement, null);
   }
 
+  // 输入参数 parameter
   @Override
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.

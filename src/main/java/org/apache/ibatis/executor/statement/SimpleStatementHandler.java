@@ -81,6 +81,7 @@ public class SimpleStatementHandler extends BaseStatementHandler {
     return resultSetHandler.<E>handleCursorResultSets(statement);
   }
 
+  // 每次都创建一个新的Statement
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     if (mappedStatement.getResultSetType() != null) {
@@ -90,6 +91,7 @@ public class SimpleStatementHandler extends BaseStatementHandler {
     }
   }
 
+  // do nothing
   @Override
   public void parameterize(Statement statement) throws SQLException {
     // N/A

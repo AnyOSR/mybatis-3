@@ -44,6 +44,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     this.methodCache = methodCache;
   }
 
+  // args 入参
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {

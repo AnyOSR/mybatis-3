@@ -70,7 +70,7 @@ public class ParamNameResolver {
           break;
         }
       }
-      if (name == null) {
+      if (name == null) {                                          // 如果没有param注解，则。。。
         // @Param was not specified.
         if (config.isUseActualParamName()) {
           name = getActualParamName(method, paramIndex);

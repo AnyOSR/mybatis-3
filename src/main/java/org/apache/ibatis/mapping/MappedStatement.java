@@ -287,7 +287,8 @@ public final class MappedStatement {
   public String[] getResulSets() {
     return resultSets;
   }
-  
+
+  // 入参
   public BoundSql getBoundSql(Object parameterObject) {
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
