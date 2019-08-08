@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.ibatis.session.SqlSession;
 
 /**
- * @author Lasse Voss
+ * @author Lasse Voss  最外层是mapper的代理 然后里面是sqlSession的代理
  */
 public class MapperProxyFactory<T> {
 
@@ -42,7 +42,7 @@ public class MapperProxyFactory<T> {
     return methodCache;
   }
 
-  // 实际创建代理
+  // 实际创建代理 创建mapper的代理
   @SuppressWarnings("unchecked")
   protected T newInstance(MapperProxy<T> mapperProxy) {
     return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
@@ -51,8 +51,9 @@ public class MapperProxyFactory<T> {
   // 创建代理
   // 创建的代理是mapper 接口的实例
   public T newInstance(SqlSession sqlSession) {
-    final MapperProxy<T> mapperProxy = new MapperProxy<T>(sqlSession, mapperInterface, methodCache);
-    return newInstance(mapperProxy);
+    // sqlSession实际上也是一个代理 SqlSessionInterceptor
+    final MapperProxy<T> mapperProxy = new MapperProxy<T>(sqlSession, mapperInterface, methodCache); // MapperProxy是一个invocationHandler
+    return newInstance(mapperProxy);   // 利用这个invocationHandler创建了一个mapper的代理
   }
 
 }
